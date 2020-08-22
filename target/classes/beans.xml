@@ -1,0 +1,6 @@
+<beans>
+    <bean id="person"  class="ink.zfei.demo.Person" init-method="init">
+        <property name="name" value="zhangsan"></property>
+    </bean>
+    <bean id="listener"  class="ink.zfei.demo.StartWebServerListener"></bean>
+</beans>
