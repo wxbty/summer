@@ -1,6 +1,8 @@
 package ink.zfei.demo;
 
-public class Person {
+import ink.zfei.core.InitializingBean;
+
+public class Person implements InitializingBean,Iperson {
 
     private String name;
 
@@ -22,10 +24,15 @@ public class Person {
 
     private int age;
 
-    public void init()
-    {
-        System.out.println("person init...");
+    @Override
+    public void say() {
+        System.out.println("hello world!");
     }
+
+//    public void init()
+//    {
+//        System.out.println("person init...");
+//    }
 
     @Override
     public String toString() {
@@ -33,5 +40,10 @@ public class Person {
                 "name='" + name + '\'' +
                 ", age=" + age +
                 '}';
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        System.out.println("afterPropertiesSet .....");
     }
 }

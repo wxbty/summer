@@ -1,13 +1,12 @@
 package ink.zfei.context;
 
 import ink.zfei.core.AbstractApplicationContext;
-import ink.zfei.core.ApplicationListener;
-import ink.zfei.core.BeanDefination;
+import ink.zfei.core.BeanDefinition;
+import ink.zfei.util.BeanUtils;
 import ink.zfei.xmlParse.Bean;
 import ink.zfei.xmlParse.Beans;
 
 import java.io.*;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -26,7 +25,7 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
     }
 
     @Override
-    protected Map<String, BeanDefination> loadBeanDefination() throws IOException {
+    protected Map<String, BeanDefinition> loadBeanDefination() throws IOException {
 
         InputStream inputStream = ClassPathXmlApplicationContext.class.getClassLoader().getResourceAsStream(this.configPath);
 
@@ -61,6 +60,13 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
                     String initMethodName = matcherInitMethod.group(1);
                     bean.setInitMethod(initMethodName);
                 }
+
+                Pattern patternScope = Pattern.compile("scope=\"(.*?)\"");
+                Matcher matcherScope = patternScope.matcher(line);
+                while (matcherScope.find()) {
+                    String scope = matcherScope.group(1);
+                    bean.setScope(scope);
+                }
                 beans.addNode(bean);
 
             }
@@ -68,11 +74,14 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
         }
 
         List<Bean> beanList = beans.getBeanList();
-        Map<String, BeanDefination> beanDefinationMap = beanList.stream().collect(Collectors.toMap(Bean::getId, bean -> {
-            BeanDefination beanDefination = new BeanDefination();
-            beanDefination.setId(bean.getId());
-            beanDefination.setBeanClass(bean.getBeanClass());
-            beanDefination.setInitMethod(bean.getInitMethod());
+        Map<String, BeanDefinition> beanDefinationMap = beanList.stream().collect(Collectors.toMap(Bean::getId, bean -> {
+            BeanDefinition beanDefination = new BeanDefinition();
+            try {
+                BeanUtils.copyProperties(beanDefination, bean);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            beanDefination.setScope(bean.getScope() == null ? "singleton" : bean.getScope());
             return beanDefination;
         }));
 

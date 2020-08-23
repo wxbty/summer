@@ -1,6 +1,10 @@
 <beans>
-    <bean id="person"  class="ink.zfei.demo.Person" init-method="init">
+    <bean id="person"  class="ink.zfei.demo.Person" >
         <property name="name" value="zhangsan"></property>
     </bean>
+
+    <bean id="device"  class="ink.zfei.demo.Device" scope="singleton"></bean>
     <bean id="listener"  class="ink.zfei.demo.StartWebServerListener"></bean>
+    <bean id="beanPS"  class="ink.zfei.demo.LogBeanPostProcessor"></bean>
+    <bean id="sta"  class="ink.zfei.demo.StarterBeanDefinitionPostProcessor"></bean>
 </beans>

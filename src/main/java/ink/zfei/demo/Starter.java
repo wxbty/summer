@@ -1,7 +1,7 @@
 package ink.zfei.demo;
 
 import ink.zfei.context.ManualApplicationContext;
-import ink.zfei.core.BeanDefination;
+import ink.zfei.core.BeanDefinition;
 
 import java.io.IOException;
 import java.util.Map;
@@ -9,10 +9,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Starter {
 
+
+    @Override
+    public String toString() {
+        return "Starter{" +
+                "name='" + name + '\'' +
+                '}';
+    }
+
+    private String name = "zhangsan";
+
     public static void main(String[] args) throws IOException {
 
-        Map<String, BeanDefination> beanDefinationMap = new ConcurrentHashMap<String, BeanDefination>();
-        BeanDefination beanDefination1 = new BeanDefination();
+        Map<String, BeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, BeanDefinition>();
+        BeanDefinition beanDefination1 = new BeanDefinition();
         beanDefination1.setId("person");
         beanDefination1.setBeanClass("ink.zfei.demo.Person");
         beanDefination1.setInitMethod(null);

@@ -6,6 +6,16 @@ public class Bean {
     private String beanClass;
     private String initMethod;
 
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    private String scope;
+
     public String getId() {
         return id;
     }

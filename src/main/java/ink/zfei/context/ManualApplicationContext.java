@@ -2,7 +2,7 @@ package ink.zfei.context;
 
 import ink.zfei.core.AbstractApplicationContext;
 import ink.zfei.core.ApplicationListener;
-import ink.zfei.core.BeanDefination;
+import ink.zfei.core.BeanDefinition;
 import ink.zfei.demo.StartWebServerListener;
 
 import java.io.IOException;
@@ -14,11 +14,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ManualApplicationContext extends AbstractApplicationContext {
 
-    Map<String, BeanDefination> beanDefinationMap = new ConcurrentHashMap<String, BeanDefination>();
+    Map<String, BeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, BeanDefinition>();
     List<ApplicationListener> listenerList = new ArrayList<>();
 
 
-    public ManualApplicationContext(Map<String, BeanDefination> beanDefinationMap, StartWebServerListener listener) throws IOException {
+    public ManualApplicationContext(Map<String, BeanDefinition> beanDefinationMap, StartWebServerListener listener) throws IOException {
         super();
         this.beanDefinationMap = beanDefinationMap;
         addListener(listener);
@@ -28,7 +28,7 @@ public class ManualApplicationContext extends AbstractApplicationContext {
 
 
     @Override
-    protected Map<String, BeanDefination> loadBeanDefination() {
+    protected Map<String, BeanDefinition> loadBeanDefination() {
         return beanDefinationMap;
     }
 

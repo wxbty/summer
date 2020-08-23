@@ -1,10 +1,20 @@
 package ink.zfei.core;
 
-public class BeanDefination {
+public class BeanDefinition {
 
     private String id;
     private String beanClass;
     private String initMethod;
+    private String scope;
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
 
     public String getId() {
         return id;

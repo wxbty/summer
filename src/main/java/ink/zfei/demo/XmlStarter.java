@@ -9,8 +9,12 @@ public class XmlStarter {
 
     public static void main(String[] args) throws IOException {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
-        Person person = (Person) ctx.getBean("person");
-        System.out.println(person);
+        Starter starter = (Starter) ctx.getBean("starter");
+        System.out.println(starter);
+//        System.out.println(person);
+//        Device device1 = (Device) ctx.getBean("device");
+//        System.out.println(device == device1);
+//        System.out.println(device);
     }
 
 }
