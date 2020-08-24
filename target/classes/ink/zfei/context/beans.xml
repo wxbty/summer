@@ -1,4 +1,0 @@
-<beans>
-    <bean id="mom"  class="ink.zfei.spring.aop.CountMethodConsumTime"></bean>
-    <bean id="listener"  class="ink.zfei.demo.StartWebServerListener"></bean>
-</beans>
