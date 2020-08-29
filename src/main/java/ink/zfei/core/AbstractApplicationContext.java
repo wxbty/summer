@@ -32,9 +32,13 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
 
     public void refresh() throws IOException {
+
+        prepareBeanFactory(this);
+
+
         //1、从外界获取bean定义信息
-        beanDefinationMap = loadBeanDefination();
-        beanDefinitionNames = beanDefinationMap.keySet().stream().collect(Collectors.toList());
+        beanDefinationMap.putAll(loadBeanDefination());
+        beanDefinitionNames = new ArrayList<>(beanDefinationMap.keySet());
 
         //Invoke factory processors registered as beans in the context.
         invokeBeanFactoryPostProcessors();
@@ -48,6 +52,15 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         RefreshApplicationEvent event = new RefreshApplicationEvent();
         publishEvent(event);
 
+    }
+
+    public void prepareBeanFactory(AbstractApplicationContext applicationContext) {
+        String id = "applicationContextAwareProcessor";
+        BeanDefinition beanDefinition = new BeanDefinition();
+        beanDefinition.setId(id);
+        beanDefinition.setBeanClass("ink.zfei.core.ApplicationContextAwareProcessor");
+        beanDefinationMap.put(id, beanDefinition);
+        applicationContext.addBeanPostProcessor(id, new ApplicationContextAwareProcessor(this));
     }
 
     private void invokeBeanFactoryPostProcessors() {
@@ -155,17 +168,9 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
                     //postProcessafterInstantiation
                     applyPostProcessAfaterInstantiation(clazz, beanName);
 
-                    //3、遍历BeanPostProcessor实现，调用before方法，返回bean
-                    wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 
-                    //4、初始化bean
-                    invokeInitMethods(beanDefination, clazz, wrappedBean);
+                    initializeBean(beanName, beanDefination, clazz, wrappedBean);
 
-                    //5、遍历BeanPostProcessor实现，调用after方法，返回bean
-                    wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
-                    if (wrappedBean != null) {
-                        beanSingleMap.put(beanName, wrappedBean);
-                    }
                 }
 
 
@@ -175,13 +180,39 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         });
     }
 
+    private void initializeBean(String beanName, BeanDefinition beanDefination, Class clazz, Object bean) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+
+        invokeAwareMethods(beanName, bean);
+
+        //3、遍历BeanPostProcessor实现，调用before方法，返回bean
+        bean = applyBeanPostProcessorsBeforeInitialization(bean, beanName);
+
+        //4、初始化bean
+        invokeInitMethods(beanDefination, clazz, bean);
+
+        //5、遍历BeanPostProcessor实现，调用after方法，返回bean
+        bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);
+        if (bean != null) {
+            beanSingleMap.put(beanName, bean);
+        }
+    }
+
+    private void invokeAwareMethods(String beanName, Object bean) {
+
+        if (bean instanceof BeanNameAware) {
+            BeanNameAware beanNameAware = (BeanNameAware) bean;
+            beanNameAware.setBeanName(beanName);
+        }
+
+    }
+
 
     private Object applyPostProcessBeforeInstantiation(Class clazz, String beanName) {
 
         for (InstantiationAwareBeanPostProcessor processor : getinstantiationAwareBeanPostProcessors()) {
             Object current = processor.postProcessBeforeInstantiation(clazz, beanName);
             if (current != null) {
-                return  processor.postProcessAfterInitialization(current, beanName);
+                return processor.postProcessAfterInitialization(current, beanName);
             }
         }
         return null;
@@ -254,12 +285,12 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         Object bean;
 
         if ("prototype".equals(beanDefination.getScope())) {
-            bean = doGetBean(id, clazz);
+            bean = doGetBean(id, clazz, beanDefination);
         } else if ("singleton".equals(beanDefination.getScope())) {
             if (beanSingleMap.containsKey(id)) {
                 bean = beanSingleMap.get(id);
             } else {
-                bean = doGetBean(id, clazz);
+                bean = doGetBean(id, clazz, beanDefination);
                 beanSingleMap.put(beanDefination.getId(), bean);
             }
         } else {
@@ -270,7 +301,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
     }
 
     //真正实例化生成bean
-    private Object doGetBean(String id, Class clazz) throws InstantiationException, IllegalAccessException {
+    private Object doGetBean(String id, Class clazz, BeanDefinition mbd) throws InstantiationException, IllegalAccessException {
         Object bean;
         if (Arrays.asList(clazz.getInterfaces()).contains(FactoryBean.class)) {
             FactoryBean factoryBean;
@@ -280,11 +311,25 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
                 factoryBean = (FactoryBean) clazz.newInstance();
                 beanSingleMap.put(FACTORY_BEAN_PREFIX + id, factoryBean);
             }
-            bean = factoryBean.getObject();
-        } else {
-            bean = clazz.newInstance();
+            return factoryBean.getObject();
         }
-        return bean;
+
+        if (mbd.getFactoryMethodName() != null) {
+            String factoryBeanName = mbd.getFactoryBeanName();
+            String methodName = mbd.getFactoryMethodName();
+            Object factoryBean = getBean(factoryBeanName);
+            try {
+                Method factoryMethod = factoryBean.getClass().getDeclaredMethod(methodName);
+                Object result = factoryMethod.invoke(factoryBean);
+                return result;
+            } catch (NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+        return clazz.newInstance();
     }
 
     protected abstract Map<String, BeanDefinition> loadBeanDefination() throws IOException;
@@ -312,16 +357,27 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             BeanDefinition beanDefination = beanDefinationMap.get(id);
             try {
                 Class clazz = Class.forName(beanDefination.getBeanClass());
-                return doGetBean(id, clazz);
-            } catch (ClassNotFoundException e) {
+                return doGetBean(id, clazz, beanDefination);
+            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
+            }catch (NullPointerException e)
+            {
+                throw e;
             }
             return null;
         }
+    }
+
+    @Override
+    public Object getBean(Class clazz) {
+
+        List<Object> list = beanSingleMap.values().stream().filter(bean -> clazz.isAssignableFrom(bean.getClass())).collect(Collectors.toList());
+        if (list.size() == 0) {
+            return null;
+        } else if (list.size() == 1) {
+            return list.get(0);
+        } else
+            return list;
     }
 
 
@@ -329,6 +385,12 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
     public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) {
         beanDefinationMap.put(beanName, beanDefinition);
         beanDefinitionNames.add(beanName);
+    }
+
+    @Override
+    public void registerBeanDefinition(BeanDefinition beanDefinition) {
+        beanDefinationMap.put(beanDefinition.getId(), beanDefinition);
+        beanDefinitionNames.add(beanDefinition.getId());
     }
 
     @Override
@@ -342,4 +404,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         return beanDefinationMap.get(beanName);
     }
 
+
+    @Override
+    public void addBeanPostProcessor(String id, BeanPostProcessor beanPostProcessor) {
+        this.beanPostProcessors.add(beanPostProcessor);
+        beanSingleMap.put(id, beanPostProcessor);
+    }
 }

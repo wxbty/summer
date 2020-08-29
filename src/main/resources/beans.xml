@@ -1,6 +1,7 @@
 <beans>
     <bean id="person"  class="ink.zfei.demo.Person" >
         <property name="name" value="zhangsan"></property>
+
     </bean>
 
     <bean id="device"  class="ink.zfei.demo.Device" scope="singleton"></bean>

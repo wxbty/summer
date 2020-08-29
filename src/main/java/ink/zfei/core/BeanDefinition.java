@@ -2,10 +2,30 @@ package ink.zfei.core;
 
 public class BeanDefinition {
 
+
     private String id;
     private String beanClass;
     private String initMethod;
-    private String scope;
+    private String scope = "singleton";
+    private String factoryBeanName;
+    private String factoryMethodName;
+
+    public String getFactoryMethodName() {
+        return factoryMethodName;
+    }
+
+    public void setFactoryMethodName(String factoryMethodName) {
+        this.factoryMethodName = factoryMethodName;
+    }
+
+    public String getFactoryBeanName() {
+        return factoryBeanName;
+    }
+
+    public void setFactoryBeanName(String factoryBeanName) {
+        this.factoryBeanName = factoryBeanName;
+    }
+
 
     public String getScope() {
         return scope;
