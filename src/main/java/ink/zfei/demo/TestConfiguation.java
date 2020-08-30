@@ -7,9 +7,16 @@ import ink.zfei.core.annation.Configuration;
 @Configuration
 public class TestConfiguation {
 
+
     @Bean
     public Person getPerson() {
         return new Person();
+    }
+
+    @Bean
+    public Device getDevice() {
+        Person person = getPerson();
+        return new Device();
     }
 
 }

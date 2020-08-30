@@ -169,6 +169,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
                     applyPostProcessAfaterInstantiation(clazz, beanName);
 
 
+                    populateBean(beanName, beanDefination, wrappedBean);
                     initializeBean(beanName, beanDefination, clazz, wrappedBean);
 
                 }
@@ -178,6 +179,33 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
                 e.printStackTrace();
             }
         });
+    }
+
+    protected void populateBean(String beanName, BeanDefinition beanDefination, Object wrappedBean) {
+        if (beanDefination.hasPropertyValues()) {
+            Map<String, String> vals = beanDefination.getPropertyValues();
+            vals.keySet().forEach(fieldName -> {
+
+                String depBeanName = vals.get(fieldName);
+                String methodName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+                try {
+                    Object depBean = getBean(depBeanName, null, null);
+                    Method method = wrappedBean.getClass().getMethod(methodName, depBean.getClass());
+
+                    method.invoke(wrappedBean, depBean);
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException | InstantiationException e) {
+                    e.printStackTrace();
+                }
+
+
+            });
+        }
+
+
     }
 
     private void initializeBean(String beanName, BeanDefinition beanDefination, Class clazz, Object bean) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -281,8 +309,16 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     }
 
-    private Object getBean(String id, Class clazz, BeanDefinition beanDefination) throws InstantiationException, IllegalAccessException {
+    private Object getBean(String id, Class clazz1, BeanDefinition beanDefination1) throws InstantiationException, IllegalAccessException {
         Object bean;
+
+        BeanDefinition beanDefination = beanDefinationMap.get(id);
+        Class clazz = null;
+        try {
+            clazz = Class.forName(beanDefination.getBeanClass());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
         if ("prototype".equals(beanDefination.getScope())) {
             bean = doGetBean(id, clazz, beanDefination);
@@ -360,8 +396,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
                 return doGetBean(id, clazz, beanDefination);
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
-            }catch (NullPointerException e)
-            {
+            } catch (NullPointerException e) {
                 throw e;
             }
             return null;

@@ -4,6 +4,15 @@ import ink.zfei.core.InitializingBean;
 
 public class Person implements InitializingBean,Iperson {
 
+//    @Override
+//    public String toString() {
+//        return "Person{" +
+//                "name='" + name + '\'' +
+//                ", age=" + age +
+//                ", device=" + device +
+//                '}';
+//    }
+
     private String name;
 
     public String getName() {
@@ -24,6 +33,16 @@ public class Person implements InitializingBean,Iperson {
 
     private int age;
 
+    public void setDevice(Device device) {
+        this.device = device;
+    }
+
+    public Device getDevice() {
+        return device;
+    }
+
+    private Device device;
+
     @Override
     public void say() {
         System.out.println("hello world!");
@@ -34,13 +53,7 @@ public class Person implements InitializingBean,Iperson {
 //        System.out.println("person init...");
 //    }
 
-    @Override
-    public String toString() {
-        return "Person{" +
-                "name='" + name + '\'' +
-                ", age=" + age +
-                '}';
-    }
+
 
     @Override
     public void afterPropertiesSet() {

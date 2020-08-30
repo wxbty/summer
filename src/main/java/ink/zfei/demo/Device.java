@@ -2,7 +2,7 @@ package ink.zfei.demo;
 
 import ink.zfei.core.FactoryBean;
 
-public class Device  implements FactoryBean {
+public class Device {
 
     private String name;
 
@@ -29,17 +29,29 @@ public class Device  implements FactoryBean {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "Device{" +
-                "name='" + name + '\'' +
-                ", status=" + status +
-                '}';
+//    @Override
+//    public String toString() {
+//        return "Device{" +
+//                "name='" + name + '\'' +
+//                ", status=" + status +
+//                ", person=" + person +
+//                '}';
+//    }
+
+
+//    @Override
+//    public Object getObject() {
+//        System.out.println("通过factorybean创建的 bean");
+//        return new Device();
+//    }
+
+    public Person getPerson() {
+        return person;
     }
 
-    @Override
-    public Object getObject() {
-        System.out.println("通过factorybean创建的 bean");
-        return new Device();
+    public void setPerson(Person person) {
+        this.person = person;
     }
+
+    private Person person;
 }

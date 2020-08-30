@@ -2,9 +2,9 @@ package ink.zfei.context;
 
 import ink.zfei.core.AbstractApplicationContext;
 import ink.zfei.core.BeanDefinition;
-import ink.zfei.util.BeanUtils;
 import ink.zfei.xmlParse.Bean;
 import ink.zfei.xmlParse.Beans;
+import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.*;
 import java.util.List;
@@ -33,6 +33,11 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
         String line = null;
 
         Beans beans = null;
+
+
+        String currentbeanName;
+        Bean currentBean = null;
+
         while ((line = br.readLine()) != null) {//使用readLine方法，一次读一行
             if ("<beans>".equals(line)) {
                 beans = new Beans();
@@ -40,35 +45,63 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
                 if (beans == null) {
                     throw new RuntimeException("配置文件格式错误，bean节点初始化必须存在beans节点！");
                 }
-                Bean bean = new Bean();
+
+                currentBean = new Bean();
                 Pattern patternId = Pattern.compile("id=\"(.*?)\"");
                 Matcher matcherId = patternId.matcher(line);
                 while (matcherId.find()) {
                     String id = matcherId.group(1);
-                    bean.setId(id);
+                    currentBean.setId(id);
+                    currentbeanName = id;
                 }
                 Pattern patternBeanClass = Pattern.compile("class=\"(.*?)\"");
                 Matcher matcherBeanClass = patternBeanClass.matcher(line);
                 while (matcherBeanClass.find()) {
                     String beanClass = matcherBeanClass.group(1);
-                    bean.setBeanClass(beanClass);
+                    currentBean.setBeanClass(beanClass);
                 }
 
                 Pattern patternInitMethod = Pattern.compile("init-method=\"(.*?)\"");
                 Matcher matcherInitMethod = patternInitMethod.matcher(line);
                 while (matcherInitMethod.find()) {
                     String initMethodName = matcherInitMethod.group(1);
-                    bean.setInitMethod(initMethodName);
+                    currentBean.setInitMethod(initMethodName);
                 }
 
                 Pattern patternScope = Pattern.compile("scope=\"(.*?)\"");
                 Matcher matcherScope = patternScope.matcher(line);
                 while (matcherScope.find()) {
                     String scope = matcherScope.group(1);
-                    bean.setScope(scope);
+                    currentBean.setScope(scope);
                 }
-                beans.addNode(bean);
 
+
+                beans.addNode(currentBean);
+
+            } else if (line.trim().startsWith("<property")) {
+                Pattern patternPropertity = Pattern.compile("name=\"(.*?)\"");
+                Matcher matcherPropertity = patternPropertity.matcher(line);
+                String propertyName = null;
+                String propertyValue = null;
+                String propertyRef = null;
+                while (matcherPropertity.find()) {
+                    propertyName = matcherPropertity.group(1);
+                    if (currentBean == null) {
+                        throw new RuntimeException("解析失败，property必须在bean范围内");
+                    }
+                }
+                Pattern patternValue = Pattern.compile("value=\"(.*?)\"");
+                Matcher matcherValue = patternValue.matcher(line);
+                while (matcherValue.find()) {
+                    propertyValue = matcherValue.group(1);
+                }
+
+                Pattern patternRef = Pattern.compile("ref=\"(.*?)\"");
+                Matcher matcherRef = patternRef.matcher(line);
+                while (matcherRef.find()) {
+                    propertyRef = matcherRef.group(1);
+                }
+                currentBean.addProperty(propertyName, propertyValue, propertyRef);
             }
 
         }
@@ -78,6 +111,10 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
             BeanDefinition beanDefination = new BeanDefinition();
             try {
                 BeanUtils.copyProperties(beanDefination, bean);
+                bean.getProperty().forEach(property -> {
+                    beanDefination.putDep(property.getName(), property.getRef());
+                });
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
