@@ -1,12 +1,14 @@
 package ink.zfei.core;
 
+import ink.zfei.beans.factory.config.BeanDefinition;
+import ink.zfei.beans.factory.config.ConfigurableBeanFactory;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class BeanDefinition {
-
+public class GenericBeanDefinition implements BeanDefinition {
 
     private String id;
     private String beanClass;
@@ -14,6 +16,7 @@ public class BeanDefinition {
     private String scope = "singleton";
     private String factoryBeanName;
     private String factoryMethodName;
+    private String parentName;
 
     public Map<String, String> getPropertyValues() {
         return propertyValues;
@@ -55,19 +58,23 @@ public class BeanDefinition {
         this.id = id;
     }
 
-    public String getBeanClass() {
+    @Override
+    public String getBeanClassName() {
         return beanClass;
     }
 
-    public void setBeanClass(String beanClass) {
+    @Override
+    public void setBeanClassName(String beanClass) {
         this.beanClass = beanClass;
     }
 
-    public String getInitMethod() {
+    @Override
+    public String getInitMethodName() {
         return initMethod;
     }
 
-    public void setInitMethod(String initMethod) {
+    @Override
+    public void setInitMethodName(String initMethodName) {
         this.initMethod = initMethod;
     }
 
@@ -77,5 +84,15 @@ public class BeanDefinition {
 
     public boolean hasPropertyValues() {
         return (this.propertyValues != null && !this.propertyValues.isEmpty());
+    }
+
+    @Override
+    public void setParentName(String parentName) {
+        this.parentName = parentName;
+    }
+
+    @Override
+    public String getParentName() {
+        return this.parentName;
     }
 }

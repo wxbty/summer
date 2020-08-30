@@ -1,4 +1,4 @@
-package ink.zfei.core;
+package ink.zfei.beans.factory;
 
 public interface FactoryBean {
 

@@ -3,16 +3,16 @@ package ink.zfei.demo;
 import ink.zfei.beans.BeanDefinitionRegistry;
 import ink.zfei.beans.BeanDefinitionRegistryPostProcessor;
 import ink.zfei.core.AbstractApplicationContext;
-import ink.zfei.core.BeanDefinition;
+import ink.zfei.core.GenericBeanDefinition;
 
 public class StarterBeanDefinitionPostProcessor implements BeanDefinitionRegistryPostProcessor {
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 
         String beanName = "starter";
-        BeanDefinition beanDefinition = new BeanDefinition();
+        GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
         beanDefinition.setId(beanName);
-        beanDefinition.setBeanClass("ink.zfei.demo.Starter");
+        beanDefinition.setBeanClassName("ink.zfei.demo.Starter");
         beanDefinition.setScope("singleton");
 
         registry.registerBeanDefinition(beanName, beanDefinition);

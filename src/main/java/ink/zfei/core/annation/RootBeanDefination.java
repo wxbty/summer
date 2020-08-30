@@ -1,9 +1,8 @@
 package ink.zfei.core.annation;
 
-import ink.zfei.core.ApplicationContext;
-import ink.zfei.core.BeanDefinition;
+import ink.zfei.core.GenericBeanDefinition;
 
-public class RootBeanDefination extends BeanDefinition {
+public class RootBeanDefination extends GenericBeanDefinition {
 
 
     public Class getConfiguationClass() {

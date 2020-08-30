@@ -3,8 +3,7 @@ package ink.zfei.context;
 import com.sun.istack.internal.Nullable;
 import ink.zfei.annation.Component;
 import ink.zfei.core.AbstractApplicationContext;
-import ink.zfei.core.BeanDefinition;
-import ink.zfei.core.annation.RootBeanDefination;
+import ink.zfei.core.GenericBeanDefinition;
 import ink.zfei.core.annation.AnnotationConfigUtils;
 import ink.zfei.core.annation.Bean;
 import ink.zfei.core.annation.Configuration;
@@ -25,11 +24,11 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
 
     Map<String, String> maps = new ConcurrentHashMap<>();
 
-    public List<BeanDefinition> getConfigBeanDefinitions() {
+    public List<GenericBeanDefinition> getConfigBeanDefinitions() {
         return configBeanDefinitions;
     }
 
-    public List<BeanDefinition> configBeanDefinitions = new ArrayList<>();
+    public List<GenericBeanDefinition> configBeanDefinitions = new ArrayList<>();
 
     public AnnotationConfigApplicationContext(String basePackages) throws IOException, URISyntaxException, ClassNotFoundException {
         super();
@@ -63,11 +62,11 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         if (annotations == null) {
             throw new RuntimeException("不是配置类");
         }
-        BeanDefinition abd = new BeanDefinition();
+        GenericBeanDefinition abd = new GenericBeanDefinition();
         String beanName = componentClasses.getSimpleName();
         beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
         abd.setId(beanName);
-        abd.setBeanClass(componentClasses.getName());
+        abd.setBeanClassName(componentClasses.getName());
         registerBeanDefinition(abd);
 
 //        boolean isPorxy = annotations.proxyBeanMethods();
@@ -75,9 +74,9 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         for (Method method : methods) {
             Bean bean = method.getAnnotation(Bean.class);
             if (bean != null) {
-                BeanDefinition definition = new BeanDefinition();
+                GenericBeanDefinition definition = new GenericBeanDefinition();
                 definition.setId(method.getName());
-                definition.setBeanClass(method.getReturnType().getName());
+                definition.setBeanClassName(method.getReturnType().getName());
                 definition.setFactoryBeanName(beanName);
                 definition.setFactoryMethodName(method.getName());
                 configBeanDefinitions.add(definition);
@@ -87,12 +86,12 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
     }
 
     @Override
-    protected Map<String, BeanDefinition> loadBeanDefination() {
+    protected Map<String, GenericBeanDefinition> loadBeanDefination() {
 
         return maps.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> {
-            BeanDefinition beanDefinition = new BeanDefinition();
+            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
             beanDefinition.setId(entry.getKey());
-            beanDefinition.setBeanClass(entry.getValue());
+            beanDefinition.setBeanClassName(entry.getValue());
             beanDefinition.setScope("singleton");
             return beanDefinition;
         }));

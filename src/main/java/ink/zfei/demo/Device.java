@@ -1,7 +1,5 @@
 package ink.zfei.demo;
 
-import ink.zfei.core.FactoryBean;
-
 public class Device {
 
     private String name;

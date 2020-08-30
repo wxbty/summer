@@ -1,7 +1,7 @@
 package ink.zfei.context;
 
 import ink.zfei.core.AbstractApplicationContext;
-import ink.zfei.core.BeanDefinition;
+import ink.zfei.core.GenericBeanDefinition;
 import ink.zfei.xmlParse.Bean;
 import ink.zfei.xmlParse.Beans;
 import org.apache.commons.beanutils.BeanUtils;
@@ -25,7 +25,7 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
     }
 
     @Override
-    protected Map<String, BeanDefinition> loadBeanDefination() throws IOException {
+    protected Map<String, GenericBeanDefinition> loadBeanDefination() throws IOException {
 
         InputStream inputStream = ClassPathXmlApplicationContext.class.getClassLoader().getResourceAsStream(this.configPath);
 
@@ -107,8 +107,8 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
         }
 
         List<Bean> beanList = beans.getBeanList();
-        Map<String, BeanDefinition> beanDefinationMap = beanList.stream().collect(Collectors.toMap(Bean::getId, bean -> {
-            BeanDefinition beanDefination = new BeanDefinition();
+        Map<String, GenericBeanDefinition> beanDefinationMap = beanList.stream().collect(Collectors.toMap(Bean::getId, bean -> {
+            GenericBeanDefinition beanDefination = new GenericBeanDefinition();
             try {
                 BeanUtils.copyProperties(beanDefination, bean);
                 bean.getProperty().forEach(property -> {

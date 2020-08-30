@@ -1,7 +1,7 @@
 package ink.zfei.demo;
 
 import ink.zfei.context.ManualApplicationContext;
-import ink.zfei.core.BeanDefinition;
+import ink.zfei.core.GenericBeanDefinition;
 
 import java.io.IOException;
 import java.util.Map;
@@ -21,11 +21,11 @@ public class Starter {
 
     public static void main(String[] args) throws IOException {
 
-        Map<String, BeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, BeanDefinition>();
-        BeanDefinition beanDefination1 = new BeanDefinition();
+        Map<String, GenericBeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, GenericBeanDefinition>();
+        GenericBeanDefinition beanDefination1 = new GenericBeanDefinition();
         beanDefination1.setId("person");
-        beanDefination1.setBeanClass("ink.zfei.demo.Person");
-        beanDefination1.setInitMethod(null);
+        beanDefination1.setBeanClassName("ink.zfei.demo.Person");
+        beanDefination1.setInitMethodName(null);
         beanDefinationMap.put(beanDefination1.getId(), beanDefination1);
 
         StartWebServerListener listener = new StartWebServerListener();

@@ -1,6 +1,6 @@
 package ink.zfei.demo;
 
-import ink.zfei.core.InitializingBean;
+import ink.zfei.beans.factory.InitializingBean;
 
 public class Person implements InitializingBean,Iperson {
 

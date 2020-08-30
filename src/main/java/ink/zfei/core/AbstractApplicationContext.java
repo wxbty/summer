@@ -1,6 +1,9 @@
 package ink.zfei.core;
 
 import ink.zfei.beans.*;
+import ink.zfei.beans.factory.BeanNameAware;
+import ink.zfei.beans.factory.FactoryBean;
+import ink.zfei.beans.factory.InitializingBean;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.io.IOException;
@@ -14,7 +17,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractApplicationContext implements ApplicationContext, BeanDefinitionRegistry {
 
 
-    protected Map<String, BeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, BeanDefinition>();
+    protected Map<String, GenericBeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, GenericBeanDefinition>();
     protected Map<String, Object> beanSingleMap = new ConcurrentHashMap<String, Object>();
     protected Map<String, BeanPostProcessor> beanPostProcessorMap = new ConcurrentHashMap<String, BeanPostProcessor>();
     protected Map<String, BeanFactoryPostProcessor> beanFactoryPostProcessorMap = new ConcurrentHashMap<String, BeanFactoryPostProcessor>();
@@ -25,7 +28,6 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
 
-    final String FACTORY_BEAN_PREFIX = "&";
 
     public AbstractApplicationContext() {
     }
@@ -56,9 +58,9 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     public void prepareBeanFactory(AbstractApplicationContext applicationContext) {
         String id = "applicationContextAwareProcessor";
-        BeanDefinition beanDefinition = new BeanDefinition();
+        GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
         beanDefinition.setId(id);
-        beanDefinition.setBeanClass("ink.zfei.core.ApplicationContextAwareProcessor");
+        beanDefinition.setBeanClassName("ink.zfei.core.ApplicationContextAwareProcessor");
         beanDefinationMap.put(id, beanDefinition);
         applicationContext.addBeanPostProcessor(id, new ApplicationContextAwareProcessor(this));
     }
@@ -70,7 +72,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         //1、扫描beanDefination,找到BeanFactoryPostProcessor实现，实例化
         //1、遍历beanDefination，把BeanPostProcessors类型的bean
         tmpBeanDefinitionNames.stream().filter(id -> {
-            String beanClass = beanDefinationMap.get(id).getBeanClass();
+            String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
                 if (ClassUtils.getAllInterfaces(clazz).contains(BeanFactoryPostProcessor.class)) {
@@ -107,7 +109,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
         //1、遍历beanDefination，把BeanPostProcessors类型的bean
         beanDefinitionNames.stream().filter(id -> {
-            String beanClass = beanDefinationMap.get(id).getBeanClass();
+            String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
                 if (ClassUtils.getAllInterfaces(clazz).contains(BeanPostProcessor.class)) {
@@ -131,7 +133,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
         //1、遍历beanDefination，把instantiationAwareBeanPostProcessor类型的bean
         beanDefinitionNames.stream().filter(id -> {
-            String beanClass = beanDefinationMap.get(id).getBeanClass();
+            String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
                 if (ClassUtils.getAllInterfaces(clazz).contains(InstantiationAwareBeanPostProcessor.class)) {
@@ -155,9 +157,9 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
         //2、遍历bean定义信息，实例化bean
         beanDefinitionNames.stream().filter(beanName -> !beanPostProcessors.contains(beanName)).forEach(beanName -> {
-            BeanDefinition beanDefination = beanDefinationMap.get(beanName);
+            GenericBeanDefinition beanDefination = beanDefinationMap.get(beanName);
             try {
-                Class clazz = Class.forName(beanDefination.getBeanClass());
+                Class clazz = Class.forName(beanDefination.getBeanClassName());
 
                 //postProcessBeforeInstantiation
                 Object bean = applyPostProcessBeforeInstantiation(clazz, beanName);
@@ -181,7 +183,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         });
     }
 
-    protected void populateBean(String beanName, BeanDefinition beanDefination, Object wrappedBean) {
+    protected void populateBean(String beanName, GenericBeanDefinition beanDefination, Object wrappedBean) {
         if (beanDefination.hasPropertyValues()) {
             Map<String, String> vals = beanDefination.getPropertyValues();
             vals.keySet().forEach(fieldName -> {
@@ -193,11 +195,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
                     Method method = wrappedBean.getClass().getMethod(methodName, depBean.getClass());
 
                     method.invoke(wrappedBean, depBean);
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException | InstantiationException e) {
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                     e.printStackTrace();
                 }
 
@@ -208,7 +206,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     }
 
-    private void initializeBean(String beanName, BeanDefinition beanDefination, Class clazz, Object bean) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void initializeBean(String beanName, GenericBeanDefinition beanDefination, Class clazz, Object bean) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
         invokeAwareMethods(beanName, bean);
 
@@ -294,14 +292,14 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     ;
 
-    private void invokeInitMethods(BeanDefinition beanDefination, Class clazz, Object bean) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void invokeInitMethods(GenericBeanDefinition beanDefination, Class clazz, Object bean) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
 
         if (bean instanceof InitializingBean) {
             ((InitializingBean) bean).afterPropertiesSet();
         }
 
-        String initMethodName = beanDefination.getInitMethod();
+        String initMethodName = beanDefination.getInitMethodName();
         if (initMethodName != null && initMethodName.length() > 0) {
             Method method = clazz.getDeclaredMethod(initMethodName);
             method.invoke(bean);
@@ -309,13 +307,13 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     }
 
-    private Object getBean(String id, Class clazz1, BeanDefinition beanDefination1) throws InstantiationException, IllegalAccessException {
+    private Object getBean(String id, Class clazz1, GenericBeanDefinition beanDefination1) throws InstantiationException, IllegalAccessException {
         Object bean;
 
-        BeanDefinition beanDefination = beanDefinationMap.get(id);
+        GenericBeanDefinition beanDefination = beanDefinationMap.get(id);
         Class clazz = null;
         try {
-            clazz = Class.forName(beanDefination.getBeanClass());
+            clazz = Class.forName(beanDefination.getBeanClassName());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -337,7 +335,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
     }
 
     //真正实例化生成bean
-    private Object doGetBean(String id, Class clazz, BeanDefinition mbd) throws InstantiationException, IllegalAccessException {
+    private Object doGetBean(String id, Class clazz, GenericBeanDefinition mbd) throws InstantiationException, IllegalAccessException {
         Object bean;
         if (Arrays.asList(clazz.getInterfaces()).contains(FactoryBean.class)) {
             FactoryBean factoryBean;
@@ -368,7 +366,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         return clazz.newInstance();
     }
 
-    protected abstract Map<String, BeanDefinition> loadBeanDefination() throws IOException;
+    protected abstract Map<String, GenericBeanDefinition> loadBeanDefination() throws IOException;
 
     @Override
     public void publishEvent(ApplicationEvent event) {
@@ -390,9 +388,9 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         if (beanSingleMap.containsKey(id)) {
             return beanSingleMap.get(id);
         } else {
-            BeanDefinition beanDefination = beanDefinationMap.get(id);
+            GenericBeanDefinition beanDefination = beanDefinationMap.get(id);
             try {
-                Class clazz = Class.forName(beanDefination.getBeanClass());
+                Class clazz = Class.forName(beanDefination.getBeanClassName());
                 return doGetBean(id, clazz, beanDefination);
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
@@ -417,13 +415,13 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
 
     @Override
-    public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) {
+    public void registerBeanDefinition(String beanName, GenericBeanDefinition beanDefinition) {
         beanDefinationMap.put(beanName, beanDefinition);
         beanDefinitionNames.add(beanName);
     }
 
     @Override
-    public void registerBeanDefinition(BeanDefinition beanDefinition) {
+    public void registerBeanDefinition(GenericBeanDefinition beanDefinition) {
         beanDefinationMap.put(beanDefinition.getId(), beanDefinition);
         beanDefinitionNames.add(beanDefinition.getId());
     }
@@ -435,7 +433,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
     }
 
     @Override
-    public BeanDefinition getBeanDefinition(String beanName) {
+    public GenericBeanDefinition getBeanDefinition(String beanName) {
         return beanDefinationMap.get(beanName);
     }
 
