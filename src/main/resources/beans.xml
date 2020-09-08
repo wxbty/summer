@@ -1,13 +1,13 @@
 <beans>
-    <bean id="person"  class="ink.zfei.demo.Person" >
+    <bean id="person"  class="ink.zfei.summer.demo.Person" >
 <!--        <property name="name" value="zhangsan"></property>-->
         <property name="device" ref="device"></property>
     </bean>
 
-    <bean id="device"  class="ink.zfei.demo.Device" scope="singleton">
+    <bean id="device" class="ink.zfei.summer.demo.Device" scope="singleton">
         <property name="person" ref="person"></property>
     </bean>
-<!--    <bean id="listener"  class="ink.zfei.demo.StartWebServerListener"></bean>-->
-<!--    <bean id="beanPS"  class="ink.zfei.demo.LogBeanPostProcessor"></bean>-->
-<!--    <bean id="sta"  class="ink.zfei.demo.StarterBeanDefinitionPostProcessor"></bean>-->
+<!--    <bean id="listener"  class="StartWebServerListener"></bean>-->
+<!--    <bean id="beanPS"  class="LogBeanPostProcessor"></bean>-->
+<!--    <bean id="sta"  class="StarterBeanDefinitionPostProcessor"></bean>-->
 </beans>
