@@ -67,6 +67,7 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         abd.setId(beanName);
         abd.setBeanClassName(componentClasses.getName());
         registerBeanDefinition(abd);
+        registerConfiguation(componentClasses.getName());
 
 //        boolean isPorxy = annotations.proxyBeanMethods();
         Method[] methods = componentClasses.getMethods();

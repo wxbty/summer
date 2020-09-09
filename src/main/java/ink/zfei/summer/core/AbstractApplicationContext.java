@@ -29,10 +29,15 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
 
+    private volatile List<String> configuationNames = new ArrayList<>(256);
+
 
     public AbstractApplicationContext() {
     }
 
+    public Map<String, GenericBeanDefinition> getBeanDefinationMap() {
+        return beanDefinationMap;
+    }
 
     public void refresh() throws IOException {
 
@@ -426,6 +431,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         beanDefinitionNames.add(beanDefinition.getId());
     }
 
+    public void registerConfiguation(String configuationName) {
+        configuationNames.add(configuationName);
+    }
+
     @Override
     public void removeBeanDefinition(String beanName) {
         beanDefinationMap.remove(beanName);
@@ -442,5 +451,9 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
     public void addBeanPostProcessor(String id, BeanPostProcessor beanPostProcessor) {
         this.beanPostProcessors.add(beanPostProcessor);
         beanSingleMap.put(id, beanPostProcessor);
+    }
+
+    public List<String> getConfiguationNames() {
+        return configuationNames;
     }
 }

@@ -26,7 +26,7 @@ public class AnnationStarter {
 
     private static void configuation() throws IOException, URISyntaxException, ClassNotFoundException {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(TestConfiguation.class);
-        Person person = (Person) ctx.getBean("getPerson");
+        Device person = (Device) ctx.getBean("device");
         System.out.println(person);
 
     }
