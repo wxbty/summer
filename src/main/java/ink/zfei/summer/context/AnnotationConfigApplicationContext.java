@@ -6,10 +6,12 @@ import ink.zfei.summer.core.GenericBeanDefinition;
 import ink.zfei.summer.core.annation.AnnotationConfigUtils;
 import ink.zfei.summer.core.annation.Bean;
 import ink.zfei.summer.core.annation.Configuration;
+import ink.zfei.summer.util.AnnationUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,6 +41,18 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         }
     }
 
+    public AnnotationConfigApplicationContext(String basePackages, Class<?> componentClasses) {
+        super();
+        try {
+            AnnotationConfigUtils.registerAnnotationConfigProcessors(this);
+            register(componentClasses);
+            scan(basePackages);
+            refresh();
+        } catch (IOException | ClassNotFoundException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
     public AnnotationConfigApplicationContext(Class<?> componentClasses) {
 
         //1、注册一个bean工厂后置处理器，负责注册配置类里拿到的bean信息
@@ -55,9 +69,9 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
 
     }
 
-    private void register(Class<?> componentClasses) {
+    public void register(Class<?> componentClasses) {
 
-        Configuration annotations = componentClasses.getAnnotation(Configuration.class);
+        Annotation annotations = AnnationUtil.findAnnotation(componentClasses, Configuration.class);
         if (annotations == null) {
             throw new RuntimeException("不是配置类");
         }
@@ -79,6 +93,7 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
                 definition.setBeanClassName(method.getReturnType().getName());
                 definition.setFactoryBeanName(beanName);
                 definition.setFactoryMethodName(method.getName());
+                registerBeanDefinition(definition);
                 configBeanDefinitions.add(definition);
             }
         }
