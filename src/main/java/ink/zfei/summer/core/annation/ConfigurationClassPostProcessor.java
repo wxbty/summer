@@ -6,6 +6,7 @@ import ink.zfei.summer.beans.BeanDefinitionRegistryPostProcessor;
 import ink.zfei.summer.context.AnnotationConfigApplicationContext;
 import ink.zfei.summer.core.AbstractApplicationContext;
 import ink.zfei.summer.core.GenericBeanDefinition;
+import ink.zfei.summer.core.ImportBeanDefinitionRegistrar;
 import ink.zfei.summer.core.ImportSelector;
 import ink.zfei.summer.util.AnnationUtil;
 
@@ -53,6 +54,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                         if (AnnationUtil.isAnnotation(outClass, Configuration.class)) {
                             registry.register(outClass);
                             loadFromConfiguration(registry, outClass.getName());
+
                         } else {
                             String beanName = outClass.getSimpleName();
                             beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
@@ -61,6 +63,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                             registry.registerBeanDefinition(importBean);
                         }
                     });
+                }else if (ImportBeanDefinitionRegistrar.class.isAssignableFrom(selectedClass)) {
+                    ImportBeanDefinitionRegistrar registrar = (ImportBeanDefinitionRegistrar) selectedClass.newInstance();
+                    registrar.registerBeanDefinitions(registry, clazz);
+
                 } else {
                     registry.registerBeanDefinition(importBean);
                 }
@@ -69,6 +75,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             e.printStackTrace();
         }
+    }
+
+    private void loadBeanDefinitionsFromRegistrars(AnnotationConfigApplicationContext registry, String name) {
     }
 
     @Override
