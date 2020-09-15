@@ -13,6 +13,11 @@ public class StandardEnvironment extends AbstractEnvironment {
     }
 
     @Override
+    public MutablePropertySources getPropertySources() {
+        return null;
+    }
+
+    @Override
     public String getActiveProfile() {
         return null;
     }

@@ -9,4 +9,6 @@ public interface ConfigurableEnvironment extends Environment{
     Map<String, Object> getSystemEnvironment();
 
     Map<String, Object> getSystemProperties();
+
+    MutablePropertySources getPropertySources();
 }
