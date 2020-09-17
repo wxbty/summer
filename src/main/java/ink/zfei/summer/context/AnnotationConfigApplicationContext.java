@@ -117,7 +117,7 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         if (basePackages == null) {
             throw new RuntimeException("At least one base package must be specified");
         }
-        String path = resolveBasePackage(basePackages);
+        String path = AnnationUtil.resolveBasePackage(basePackages);
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
 
@@ -129,8 +129,8 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         }
 
         URL url = list.get(0);
-        File dir = new File(toURI(url.toString()).getSchemeSpecificPart());
-        for (File content : listDirectory(dir)) {
+        File dir = new File(AnnationUtil.toURI(url.toString()).getSchemeSpecificPart());
+        for (File content : AnnationUtil.listDirectory(dir)) {
 
             String className = content.getAbsolutePath();
             className = className.replace(File.separatorChar, '.');
@@ -157,52 +157,12 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
 
     }
 
-    protected File[] listDirectory(File dir) {
-        File[] files = dir.listFiles();
-        if (files == null) {
-            return new File[0];
-        }
-        Arrays.sort(files, Comparator.comparing(File::getName));
-        return files;
-    }
-
-    private String resolveBasePackage(String basePackage) {
-        return basePackage.replace('.', '/');
-    }
-
-    public static URI toURI(String location) throws URISyntaxException {
-        return new URI(replace(location, " ", "%20"));
-    }
 
 
-    public static String replace(String inString, String oldPattern, String newPattern) {
-        if (newPattern == null) {
-            return inString;
-        }
-        int index = inString.indexOf(oldPattern);
-        if (index == -1) {
-            // no occurrence -> can return input as-is
-            return inString;
-        }
 
-        int capacity = inString.length();
-        if (newPattern.length() > oldPattern.length()) {
-            capacity += 16;
-        }
-        StringBuilder sb = new StringBuilder(capacity);
 
-        int pos = 0;  // our position in the old string
-        int patLen = oldPattern.length();
-        while (index >= 0) {
-            sb.append(inString, pos, index);
-            sb.append(newPattern);
-            pos = index + patLen;
-            index = inString.indexOf(oldPattern, pos);
-        }
 
-        // append any characters to the right of a match
-        sb.append(inString, pos, inString.length());
-        return sb.toString();
-    }
+
+
 
 }

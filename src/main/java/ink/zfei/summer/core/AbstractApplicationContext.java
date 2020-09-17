@@ -8,6 +8,7 @@ import ink.zfei.summer.beans.factory.BeanFactory;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -347,7 +348,17 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             if (beanSingleMap.containsKey(BeanFactory.FACTORY_BEAN_PREFIX + id)) {
                 factoryBean = (FactoryBean) beanSingleMap.get(BeanFactory.FACTORY_BEAN_PREFIX + id);
             } else {
-                factoryBean = (FactoryBean) clazz.newInstance();
+                if (mbd.getConstrucrorParm() != null) {
+                    try {
+                        Constructor c = clazz.getConstructor(String.class);
+                        factoryBean = (FactoryBean) c.newInstance(mbd.getConstrucrorParm());
+                    } catch (NoSuchMethodException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                } else {
+                    factoryBean = (FactoryBean) clazz.newInstance();
+                }
                 beanSingleMap.put(BeanFactory.FACTORY_BEAN_PREFIX + id, factoryBean);
             }
             return factoryBean.getObject();

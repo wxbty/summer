@@ -14,6 +14,7 @@ public class GenericBeanDefinition implements BeanDefinition {
     private String factoryBeanName;
     private String factoryMethodName;
     private String parentName;
+    private String construcrorParm;
 
     public Map<String, String> getPropertyValues() {
         return propertyValues;
@@ -91,5 +92,13 @@ public class GenericBeanDefinition implements BeanDefinition {
     @Override
     public String getParentName() {
         return this.parentName;
+    }
+
+    public String getConstrucrorParm() {
+        return construcrorParm;
+    }
+
+    public void setConstrucrorParm(String construcrorParm) {
+        this.construcrorParm = construcrorParm;
     }
 }
