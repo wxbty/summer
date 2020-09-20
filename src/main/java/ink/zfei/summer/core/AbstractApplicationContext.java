@@ -5,12 +5,16 @@ import ink.zfei.summer.beans.factory.BeanNameAware;
 import ink.zfei.summer.beans.factory.FactoryBean;
 import ink.zfei.summer.beans.factory.InitializingBean;
 import ink.zfei.summer.beans.factory.BeanFactory;
-import org.apache.commons.lang3.ClassUtils;
+import ink.zfei.summer.util.ClassUtils;
+import ink.zfei.summer.util.ObjectUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -81,7 +85,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
-                if (ClassUtils.getAllInterfaces(clazz).contains(BeanFactoryPostProcessor.class)) {
+                if (Arrays.asList(ClassUtils.getAllInterfaces(clazz)).contains(BeanFactoryPostProcessor.class)) {
                     return true;
                 }
             } catch (ClassNotFoundException e) {
@@ -118,7 +122,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
-                if (ClassUtils.getAllInterfaces(clazz).contains(BeanPostProcessor.class)) {
+                if (Arrays.asList(ClassUtils.getAllInterfaces(clazz)).contains(BeanPostProcessor.class)) {
                     return true;
                 }
             } catch (ClassNotFoundException e) {
@@ -142,7 +146,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
-                if (ClassUtils.getAllInterfaces(clazz).contains(InstantiationAwareBeanPostProcessor.class)) {
+                if (Arrays.asList(ClassUtils.getAllInterfaces(clazz)).contains(InstantiationAwareBeanPostProcessor.class)) {
                     return true;
                 }
             } catch (ClassNotFoundException e) {
@@ -163,30 +167,95 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
         //2、遍历bean定义信息，实例化bean
         beanDefinitionNames.stream().filter(beanName -> !beanPostProcessors.contains(beanName)).forEach(beanName -> {
-            GenericBeanDefinition beanDefination = beanDefinationMap.get(beanName);
+            GenericBeanDefinition mbd = beanDefinationMap.get(beanName);
             try {
-                Class clazz = Class.forName(beanDefination.getBeanClassName());
+
+//                GenericBeanDefinition mbdToUse = mbd;
+
+                Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
+                if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
+//                    mbdToUse = new GenericBeanDefinition(mbd);
+                    mbd.setBeanClass(resolvedClass);
+                }
+
 
                 //postProcessBeforeInstantiation
-                Object bean = applyPostProcessBeforeInstantiation(clazz, beanName);
+                Object bean = applyPostProcessBeforeInstantiation(resolvedClass, beanName);
                 if (bean != null) {
                     beanSingleMap.put(beanName, bean);
                 } else {
-                    Object wrappedBean = getBean(beanName, clazz, beanDefination);
+                    Object wrappedBean = getBean(beanName, resolvedClass, mbd);
                     //postProcessafterInstantiation
-                    applyPostProcessAfaterInstantiation(clazz, beanName);
+                    applyPostProcessAfaterInstantiation(resolvedClass, beanName);
 
 
-                    populateBean(beanName, beanDefination, wrappedBean);
-                    initializeBean(beanName, beanDefination, clazz, wrappedBean);
+                    populateBean(beanName, mbd, wrappedBean);
+                    initializeBean(beanName, mbd, resolvedClass, wrappedBean);
 
                 }
 
 
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                 e.printStackTrace();
             }
         });
+    }
+
+    /**
+     * todo 第三个参数不知道干什么用
+     */
+    private Class<?> resolveBeanClass(GenericBeanDefinition mbd, String beanName, final Class<?>... typesToMatch) {
+
+        if (mbd.hasBeanClass()) {
+            return mbd.getBeanClass();
+        } else {
+            try {
+                return doResolveBeanClass(mbd, typesToMatch);
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+    }
+
+    private Class<?> doResolveBeanClass(GenericBeanDefinition mbd, Class<?>... typesToMatch) throws ClassNotFoundException {
+
+        ClassLoader beanClassLoader = getBeanClassLoader();
+        boolean freshResolve = false;
+
+        if (!ObjectUtils.isEmpty(typesToMatch)) {
+            //不知道干什么用
+        }
+
+        String className = mbd.getBeanClassName();
+        if (className != null) {
+            //className上可能有spel表达式，先去解析，如#{aa}
+            Object evaluated = evaluateBeanDefinitionString(className, mbd);
+            // A dynamically resolved expression, supported as of 4.2...
+            if (evaluated instanceof Class) {
+                return (Class<?>) evaluated;
+            } else if (evaluated instanceof String) {
+                className = (String) evaluated;
+                freshResolve = true;
+            } else {
+                throw new IllegalStateException("Invalid class name expression result: " + evaluated);
+            }
+            if (freshResolve) {
+                //如果有解析出新值，用新值获取class
+                return ClassUtils.forName(className, beanClassLoader);
+            }
+        }
+        return mbd.resolveBeanClass(beanClassLoader);
+
+    }
+
+    private Object evaluateBeanDefinitionString(String className, GenericBeanDefinition mbd) {
+
+        return className;
+    }
+
+    private ClassLoader getBeanClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
     }
 
     protected void populateBean(String beanName, GenericBeanDefinition beanDefination, Object wrappedBean) {

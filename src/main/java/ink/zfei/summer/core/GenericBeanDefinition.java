@@ -1,15 +1,19 @@
 package ink.zfei.summer.core;
 
 import ink.zfei.summer.beans.factory.config.BeanDefinition;
+import ink.zfei.summer.beans.factory.support.AbstractBeanDefinition;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class GenericBeanDefinition implements BeanDefinition {
+/**
+ *  1、beanDefinition有父子关系，子可以继承大部分父通用属性，
+ *  2、在BeanFactory阶段merge属性
+ *  3、是为了代替Root/childBeanDefinition,需要硬编码指定父子关系Generic更灵活
+ */
+public class GenericBeanDefinition extends AbstractBeanDefinition {
 
     private String id;
-    private String beanClass;
-    private String initMethod;
     private String scope = "singleton";
     private String factoryBeanName;
     private String factoryMethodName;
@@ -54,26 +58,6 @@ public class GenericBeanDefinition implements BeanDefinition {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    @Override
-    public String getBeanClassName() {
-        return beanClass;
-    }
-
-    @Override
-    public void setBeanClassName(String beanClass) {
-        this.beanClass = beanClass;
-    }
-
-    @Override
-    public String getInitMethodName() {
-        return initMethod;
-    }
-
-    @Override
-    public void setInitMethodName(String initMethodName) {
-        this.initMethod = initMethod;
     }
 
     public void putDep(String fieldName, String beanName) {

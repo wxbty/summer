@@ -1,6 +1,14 @@
 package ink.zfei.summer.beans.factory.config;
 
-public interface BeanDefinition {
+import ink.zfei.summer.beans.BeanMetadataElement;
+import ink.zfei.summer.core.AttributeAccessor;
+
+/**
+ * AttributeAccessor：额外属性访问能力
+ * BeanMetadataElement：标记属性哪里来
+ */
+//public interface BeanDefinition{
+public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
     /**
      * 单例

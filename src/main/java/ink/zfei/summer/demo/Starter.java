@@ -24,7 +24,7 @@ public class Starter {
         Map<String, GenericBeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, GenericBeanDefinition>();
         GenericBeanDefinition beanDefination1 = new GenericBeanDefinition();
         beanDefination1.setId("person");
-        beanDefination1.setBeanClassName("ink.zfei.demo.Person");
+        beanDefination1.setBeanClassName("ink.zfei.summer.demo.Person");
         beanDefination1.setInitMethodName(null);
         beanDefinationMap.put(beanDefination1.getId(), beanDefination1);
 
