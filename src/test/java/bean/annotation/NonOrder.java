@@ -1,4 +1,4 @@
-package ink.zfei.summer.demo.annotation;
+package bean.annotation;
 
 public class NonOrder {
 

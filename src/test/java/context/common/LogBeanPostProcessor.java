@@ -1,6 +1,8 @@
-package ink.zfei.summer.demo;
+package context.common;
 
+import bean.Person;
 import ink.zfei.summer.beans.BeanPostProcessor;
+import ink.zfei.summer.demo.Iperson;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

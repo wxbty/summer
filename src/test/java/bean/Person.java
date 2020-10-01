@@ -1,8 +1,9 @@
-package ink.zfei.summer.demo;
+package bean;
 
 import ink.zfei.summer.beans.factory.InitializingBean;
+import ink.zfei.summer.demo.Iperson;
 
-public class Person implements InitializingBean,Iperson {
+public class Person implements InitializingBean, Iperson {
 
 //    @Override
 //    public String toString() {

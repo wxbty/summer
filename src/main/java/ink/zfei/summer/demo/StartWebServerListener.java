@@ -1,5 +1,6 @@
 package ink.zfei.summer.demo;
 
+import ink.zfei.summer.annation.Component;
 import ink.zfei.summer.core.ApplicationEvent;
 import ink.zfei.summer.core.ApplicationListener;
 

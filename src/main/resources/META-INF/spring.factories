@@ -1,2 +1,2 @@
 ink.zfei.boot.autoconfigure.EnableAutoConfiguration=\
-ink.zfei.summer.demo.TestAutoConfiguation
+context.annotation.TestAutoConfiguation

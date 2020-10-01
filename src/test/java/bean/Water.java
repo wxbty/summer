@@ -1,6 +1,6 @@
-package ink.zfei.summer.demo;
+package bean;
 
-public class Device {
+public class Water {
 
     private String name;
 

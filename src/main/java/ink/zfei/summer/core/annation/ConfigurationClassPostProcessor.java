@@ -34,41 +34,43 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
             Class clazz = Class.forName(configuationName);
             Import in = (Import) AnnationUtil.findAnnotation(clazz, Import.class);
             if (in != null) {
-                Class selectedClass = in.value()[0];
-                GenericBeanDefinition importBean = new GenericBeanDefinition();
-                importBean.setBeanClassName(selectedClass.getCanonicalName());
-                importBean.setId("internal_" + selectedClass.getSimpleName());
+                Class[] selectedClasss = in.value();
+                for (Class selectedClass : selectedClasss) {
+                    GenericBeanDefinition importBean = new GenericBeanDefinition();
+                    importBean.setBeanClassName(selectedClass.getCanonicalName());
+                    importBean.setId("internal_" + selectedClass.getSimpleName());
 
-                if (ImportSelector.class.isAssignableFrom(selectedClass)) {
-                    ImportSelector importSelector = (ImportSelector) selectedClass.newInstance();
-                    String[] importSelectors = importSelector.selectImports(clazz);
-                    Arrays.stream(importSelectors).forEach(beanClassName -> {
-                        GenericBeanDefinition selectBean = new GenericBeanDefinition();
-                        selectBean.setBeanClassName(beanClassName);
-                        Class outClass = null;
-                        try {
-                            outClass = Class.forName(beanClassName);
-                        } catch (ClassNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                        if (AnnationUtil.isAnnotation(outClass, Configuration.class)) {
-                            registry.register(outClass);
-                            loadFromConfiguration(registry, outClass.getName());
+                    if (ImportSelector.class.isAssignableFrom(selectedClass)) {
+                        ImportSelector importSelector = (ImportSelector) selectedClass.newInstance();
+                        String[] importSelectors = importSelector.selectImports(clazz);
+                        Arrays.stream(importSelectors).forEach(beanClassName -> {
+                            GenericBeanDefinition selectBean = new GenericBeanDefinition();
+                            selectBean.setBeanClassName(beanClassName);
+                            Class outClass = null;
+                            try {
+                                outClass = Class.forName(beanClassName);
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                            if (AnnationUtil.isAnnotation(outClass, Configuration.class)) {
+                                registry.register(outClass);
+                                loadFromConfiguration(registry, outClass.getName());
 
-                        } else {
-                            String beanName = outClass.getSimpleName();
-                            beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
-                            selectBean.setId(beanName);
-                            registry.registerBeanDefinition(selectBean);
-                            registry.registerBeanDefinition(importBean);
-                        }
-                    });
-                }else if (ImportBeanDefinitionRegistrar.class.isAssignableFrom(selectedClass)) {
-                    ImportBeanDefinitionRegistrar registrar = (ImportBeanDefinitionRegistrar) selectedClass.newInstance();
-                    registrar.registerBeanDefinitions(registry, clazz);
+                            } else {
+                                String beanName = outClass.getSimpleName();
+                                beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
+                                selectBean.setId(beanName);
+                                registry.registerBeanDefinition(selectBean);
+                                registry.registerBeanDefinition(importBean);
+                            }
+                        });
+                    } else if (ImportBeanDefinitionRegistrar.class.isAssignableFrom(selectedClass)) {
+                        ImportBeanDefinitionRegistrar registrar = (ImportBeanDefinitionRegistrar) selectedClass.newInstance();
+                        registrar.registerBeanDefinitions(registry, clazz);
 
-                } else {
-                    registry.registerBeanDefinition(importBean);
+                    } else {
+                        registry.registerBeanDefinition(importBean);
+                    }
                 }
             }
 

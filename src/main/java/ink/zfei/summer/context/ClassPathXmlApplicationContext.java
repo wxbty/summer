@@ -17,7 +17,7 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
 
     private String configPath;
 
-    public ClassPathXmlApplicationContext(String configPath) throws IOException {
+    public ClassPathXmlApplicationContext(String configPath) {
 
         super();
         this.configPath = configPath;
@@ -29,6 +29,9 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
 
         InputStream inputStream = ClassPathXmlApplicationContext.class.getClassLoader().getResourceAsStream(this.configPath);
 
+        if (inputStream == null) {
+            throw new IOException();
+        }
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));//构造一个BufferedReader类来读取文件
         String line = null;
 

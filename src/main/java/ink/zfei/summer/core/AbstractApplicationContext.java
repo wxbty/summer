@@ -1,10 +1,10 @@
 package ink.zfei.summer.core;
 
 import ink.zfei.summer.beans.*;
+import ink.zfei.summer.beans.factory.BeanFactory;
 import ink.zfei.summer.beans.factory.BeanNameAware;
 import ink.zfei.summer.beans.factory.FactoryBean;
 import ink.zfei.summer.beans.factory.InitializingBean;
-import ink.zfei.summer.beans.factory.BeanFactory;
 import ink.zfei.summer.util.ClassUtils;
 import ink.zfei.summer.util.ObjectUtils;
 
@@ -12,9 +12,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -22,6 +19,11 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractApplicationContext implements ApplicationContext, BeanDefinitionRegistry {
 
+
+    /*
+     *  容器对外显示名称，默认类似Object的toString
+     */
+    private String displayName = ObjectUtils.identityToString(this);
 
     protected Map<String, GenericBeanDefinition> beanDefinationMap = new ConcurrentHashMap<String, GenericBeanDefinition>();
     protected Map<String, Object> beanSingleMap = new ConcurrentHashMap<String, Object>();
@@ -44,12 +46,16 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         return beanDefinationMap;
     }
 
-    public void refresh() throws IOException {
+    public void refresh() {
 
         prepareBeanFactory(this);
 
         //1、从外界获取bean定义信息
-        beanDefinationMap.putAll(loadBeanDefination());
+        try {
+            beanDefinationMap.putAll(loadBeanDefination());
+        } catch (IOException ex) {
+            throw new RuntimeException("I/O error parsing bean definition source for " + getDisplayName(), ex);
+        }
         beanDefinitionNames = new ArrayList<>(beanDefinationMap.keySet());
 
         //Invoke factory processors registered as beans in the context.
@@ -85,13 +91,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
-                if (Arrays.asList(ClassUtils.getAllInterfaces(clazz)).contains(BeanFactoryPostProcessor.class)) {
-                    return true;
-                }
+                return BeanFactoryPostProcessor.class.isAssignableFrom(clazz);
             } catch (ClassNotFoundException e) {
                 return false;
             }
-            return false;
         }).forEach(id -> {
             //2、提前注册，实例化
             BeanFactoryPostProcessor beanFactoryPostProcessor = (BeanFactoryPostProcessor) getBean(id);
@@ -473,6 +476,9 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         if (beanSingleMap.containsKey(id)) {
             return beanSingleMap.get(id);
         } else {
+            if (!beanDefinationMap.containsKey(id)) {
+                return null;
+            }
             GenericBeanDefinition beanDefination = beanDefinationMap.get(id);
             try {
                 Class clazz = Class.forName(beanDefination.getBeanClassName());
@@ -535,5 +541,13 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     public List<String> getConfiguationNames() {
         return configuationNames;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
     }
 }

@@ -1,4 +1,4 @@
-package ink.zfei.summer.demo.annotation;
+package bean.annotation;
 
 import ink.zfei.summer.annation.Component;
 

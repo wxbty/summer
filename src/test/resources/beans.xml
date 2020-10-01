@@ -1,10 +1,10 @@
 <beans>
-    <bean id="person"  class="ink.zfei.summer.demo.Person" >
+    <bean id="person"  class="bean.Person" >
 <!--        <property name="name" value="zhangsan"></property>-->
         <property name="device" ref="device"></property>
     </bean>
 
-    <bean id="device" class="ink.zfei.summer.demo.Device" scope="singleton">
+    <bean id="device" class="bean.Device" scope="singleton">
         <property name="person" ref="person"></property>
     </bean>
 <!--    <bean id="listener"  class="StartWebServerListener"></bean>-->

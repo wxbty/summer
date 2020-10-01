@@ -31,14 +31,15 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
 
     public List<GenericBeanDefinition> configBeanDefinitions = new ArrayList<>();
 
-    public AnnotationConfigApplicationContext(String basePackages) throws IOException, URISyntaxException, ClassNotFoundException {
+    public AnnotationConfigApplicationContext(String basePackages)  {
         super();
-        scan(basePackages);
         try {
-            refresh();
-        } catch (IOException e) {
+            scan(basePackages);
+        } catch (IOException | URISyntaxException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+        refresh();
+
     }
 
     public AnnotationConfigApplicationContext(String basePackages, Class<?> componentClasses) {
@@ -61,11 +62,7 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         //2、解析传入的配置类
         register(componentClasses);
 
-        try {
-            refresh();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        refresh();
 
     }
 
@@ -147,7 +144,7 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
             if (component != null) {
                 String beanName = component.value();
                 if (StringUtils.isBlank(beanName)) {
-                    beanName = aClass.getName();
+                    beanName = aClass.getSimpleName();
                     beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
                 }
                 maps.put(beanName, className);
@@ -156,13 +153,6 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
         }
 
     }
-
-
-
-
-
-
-
 
 
 }
