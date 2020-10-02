@@ -125,13 +125,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             String beanClass = beanDefinationMap.get(id).getBeanClassName();
             try {
                 Class clazz = Class.forName(beanClass);
-                if (Arrays.asList(ClassUtils.getAllInterfaces(clazz)).contains(BeanPostProcessor.class)) {
-                    return true;
-                }
+               return BeanPostProcessor.class.isAssignableFrom(clazz);
             } catch (ClassNotFoundException e) {
                 return false;
             }
-            return false;
         }).forEach(id -> {
             //2、提前注册，实例化
             BeanPostProcessor beanPostProcessor = (BeanPostProcessor) getBean(id);

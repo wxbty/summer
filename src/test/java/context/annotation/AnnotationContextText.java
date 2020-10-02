@@ -3,9 +3,16 @@ package context.annotation;
 import bean.*;
 import bean.annotation.NonOrder;
 import bean.annotation.Order;
+import context.common.CommonProcessorConfiguation;
+import context.common.Iperson;
 import ink.zfei.summer.context.AnnotationConfigApplicationContext;
+import ink.zfei.summer.core.ApplicationListener;
+import ink.zfei.summer.core.io.support.SpringFactoriesLoader;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.lang.reflect.Proxy;
+import java.util.List;
 
 public class AnnotationContextText {
 
@@ -47,5 +54,23 @@ public class AnnotationContextText {
         Water water = (Water) ctx.getBean("water");
         Assert.assertNotNull(water);
     }
+
+    @Test
+    public void beanPostProcessor() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(CommonProcessorConfiguation.class);
+        Iperson person = (Iperson) ctx.getBean("person");
+        person.say();
+        Assert.assertNotNull(person);
+        Assert.assertTrue(person instanceof Proxy);
+    }
+
+    @Test
+    public void loadSpringFactories() {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        List<String> list = SpringFactoriesLoader.loadFactoryNames(ApplicationListener.class,loader);
+        Assert.assertTrue(list.contains("context.common.StartWebServerListener"));
+    }
+
+
 
 }

@@ -1,4 +1,4 @@
-package context.annotation;
+package context.common;
 
 
 import bean.Water;
@@ -8,7 +8,6 @@ import ink.zfei.summer.core.annation.Bean;
 import ink.zfei.summer.core.annation.Configuration;
 
 @Configuration
-@Import(MyImportSelect.class)
 public class TestAutoConfiguation {
 
 

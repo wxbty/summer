@@ -1,7 +1,7 @@
 package bean;
 
 import ink.zfei.summer.beans.factory.InitializingBean;
-import ink.zfei.summer.demo.Iperson;
+import context.common.Iperson;
 
 public class Person implements InitializingBean, Iperson {
 

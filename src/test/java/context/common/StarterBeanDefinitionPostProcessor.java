@@ -1,4 +1,4 @@
-package ink.zfei.summer.demo;
+package context.common;
 
 import ink.zfei.summer.beans.BeanDefinitionRegistry;
 import ink.zfei.summer.beans.BeanDefinitionRegistryPostProcessor;

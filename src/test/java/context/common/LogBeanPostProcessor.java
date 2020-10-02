@@ -2,7 +2,6 @@ package context.common;
 
 import bean.Person;
 import ink.zfei.summer.beans.BeanPostProcessor;
-import ink.zfei.summer.demo.Iperson;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -13,7 +12,7 @@ public class LogBeanPostProcessor implements BeanPostProcessor {
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) {
 
-        if (bean instanceof Person) {
+        if (bean instanceof Iperson) {
             LogInvocationHandler invocationHandler = new LogInvocationHandler(bean);
             Object proxy = Proxy.newProxyInstance(LogBeanPostProcessor.class.getClassLoader(), new Class[]{Iperson.class}, invocationHandler);
             return proxy;

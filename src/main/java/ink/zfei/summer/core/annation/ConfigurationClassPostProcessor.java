@@ -38,7 +38,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                 for (Class selectedClass : selectedClasss) {
                     GenericBeanDefinition importBean = new GenericBeanDefinition();
                     importBean.setBeanClassName(selectedClass.getCanonicalName());
-                    importBean.setId("internal_" + selectedClass.getSimpleName());
+                    importBean.setId(selectedClass.getClass().getPackage().getName() + selectedClass.getSimpleName());
 
                     if (ImportSelector.class.isAssignableFrom(selectedClass)) {
                         ImportSelector importSelector = (ImportSelector) selectedClass.newInstance();

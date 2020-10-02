@@ -1,4 +1,4 @@
-package ink.zfei.summer.demo;
+package context.common;
 
 public interface Iperson {
 
