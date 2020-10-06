@@ -1,4 +1,4 @@
-package ink.zfei.summer.core.annation;
+package ink.zfei.summer.core.annotation;
 
 import java.lang.annotation.*;
 

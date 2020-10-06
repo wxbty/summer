@@ -1,6 +1,6 @@
 package ink.zfei.summer.util;
 
-import ink.zfei.summer.core.annation.Configuration;
+import ink.zfei.summer.core.annotation.Configuration;
 
 import java.io.File;
 import java.lang.annotation.Annotation;

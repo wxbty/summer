@@ -1,7 +1,7 @@
 package ink.zfei.summer.context;
 
 import ink.zfei.summer.core.AbstractApplicationContext;
-import ink.zfei.summer.core.GenericBeanDefinition;
+import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.xmlParse.Beans;
 import ink.zfei.summer.xmlParse.Bean;
 import org.apache.commons.beanutils.BeanUtils;
@@ -114,9 +114,9 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
             GenericBeanDefinition beanDefination = new GenericBeanDefinition();
             try {
                 BeanUtils.copyProperties(beanDefination, bean);
-                bean.getProperty().forEach(property -> {
-                    beanDefination.putDep(property.getName(), property.getRef());
-                });
+//                bean.getProperty().forEach(property -> {
+//                    beanDefination.putDep(property.getName(), property.getRef());
+//                });
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -129,4 +129,18 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
     }
 
 
+    @Override
+    public <T> T getBean(String name, Class<T> requiredType) {
+        return null;
+    }
+
+    @Override
+    public <T> T getBean(Class<T> requiredType, Object... args) {
+        return null;
+    }
+
+    @Override
+    public Object getBean(String name, Object... args) {
+        return null;
+    }
 }

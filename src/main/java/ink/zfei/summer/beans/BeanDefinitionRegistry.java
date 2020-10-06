@@ -1,6 +1,7 @@
 package ink.zfei.summer.beans;
 
-import ink.zfei.summer.core.GenericBeanDefinition;
+import ink.zfei.summer.beans.factory.config.BeanDefinition;
+import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 
 public interface BeanDefinitionRegistry {
 
@@ -10,6 +11,6 @@ public interface BeanDefinitionRegistry {
 
     void removeBeanDefinition(String beanName);
 
-    GenericBeanDefinition getBeanDefinition(String beanName);
+    BeanDefinition getBeanDefinition(String beanName);
 
 }

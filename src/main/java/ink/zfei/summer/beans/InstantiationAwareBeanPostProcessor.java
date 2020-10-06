@@ -11,4 +11,9 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
     default boolean postProcessAfterInstantiation(Object bean, String beanName) {
         return true;
     }
+
+    default PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+
+        return null;
+    }
 }

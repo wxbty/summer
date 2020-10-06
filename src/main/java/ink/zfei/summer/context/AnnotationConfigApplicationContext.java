@@ -2,10 +2,10 @@ package ink.zfei.summer.context;
 
 import ink.zfei.summer.annation.Component;
 import ink.zfei.summer.core.AbstractApplicationContext;
-import ink.zfei.summer.core.GenericBeanDefinition;
-import ink.zfei.summer.core.annation.AnnotationConfigUtils;
-import ink.zfei.summer.core.annation.Bean;
-import ink.zfei.summer.core.annation.Configuration;
+import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
+import ink.zfei.summer.core.annotation.AnnotationConfigUtils;
+import ink.zfei.summer.core.annotation.Bean;
+import ink.zfei.summer.core.annotation.Configuration;
 import ink.zfei.summer.util.AnnationUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -87,7 +86,6 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
             if (bean != null) {
                 GenericBeanDefinition definition = new GenericBeanDefinition();
                 definition.setId(method.getName());
-                definition.setBeanClassName(method.getReturnType().getName());
                 definition.setFactoryBeanName(beanName);
                 definition.setFactoryMethodName(method.getName());
                 registerBeanDefinition(definition);
@@ -155,4 +153,18 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
     }
 
 
+    @Override
+    public <T> T getBean(String name, Class<T> requiredType) {
+        return null;
+    }
+
+    @Override
+    public <T> T getBean(Class<T> requiredType, Object... args) {
+        return null;
+    }
+
+    @Override
+    public Object getBean(String name, Object... args) {
+        return null;
+    }
 }

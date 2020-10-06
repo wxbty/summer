@@ -1,8 +1,8 @@
 package ink.zfei.summer.util;
 
 
+import ink.zfei.summer.lang.Nullable;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.Charset;
@@ -1278,5 +1278,23 @@ public abstract class StringUtils {
     }
 
 
+    public static String arrayToCommaDelimitedString(@Nullable Object[] arr) {
+        return arrayToDelimitedString(arr, ",");
+    }
+
+    public static String arrayToDelimitedString(@Nullable Object[] arr, String delim) {
+        if (ObjectUtils.isEmpty(arr)) {
+            return "";
+        }
+        if (arr.length == 1) {
+            return ObjectUtils.nullSafeToString(arr[0]);
+        }
+
+        StringJoiner sj = new StringJoiner(delim);
+        for (Object o : arr) {
+            sj.add(String.valueOf(o));
+        }
+        return sj.toString();
+    }
 }
 

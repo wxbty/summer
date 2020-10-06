@@ -1,11 +1,11 @@
-package ink.zfei.summer.core.annation;
+package ink.zfei.summer.core.annotation;
 
 import ink.zfei.summer.annation.Import;
 import ink.zfei.summer.beans.BeanDefinitionRegistry;
 import ink.zfei.summer.beans.BeanDefinitionRegistryPostProcessor;
 import ink.zfei.summer.context.AnnotationConfigApplicationContext;
 import ink.zfei.summer.core.AbstractApplicationContext;
-import ink.zfei.summer.core.GenericBeanDefinition;
+import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.core.ImportBeanDefinitionRegistrar;
 import ink.zfei.summer.core.ImportSelector;
 import ink.zfei.summer.util.AnnationUtil;

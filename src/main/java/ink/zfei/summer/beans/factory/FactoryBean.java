@@ -1,7 +1,14 @@
 package ink.zfei.summer.beans.factory;
 
-public interface FactoryBean {
+public interface FactoryBean<T> {
 
-    Object getObject() ;
+    T getObject() ;
 
+    Class<?> getObjectType();
+
+    default boolean isSingleton() {
+        return true;
+    }
+
+    String OBJECT_TYPE_ATTRIBUTE = "factoryBeanObjectType";
 }

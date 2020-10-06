@@ -3,7 +3,7 @@ package context.common;
 import ink.zfei.summer.beans.BeanDefinitionRegistry;
 import ink.zfei.summer.beans.BeanDefinitionRegistryPostProcessor;
 import ink.zfei.summer.core.AbstractApplicationContext;
-import ink.zfei.summer.core.GenericBeanDefinition;
+import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 
 public class StarterBeanDefinitionPostProcessor implements BeanDefinitionRegistryPostProcessor {
     @Override

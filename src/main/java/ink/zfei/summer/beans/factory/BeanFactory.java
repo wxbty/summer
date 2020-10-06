@@ -13,5 +13,11 @@ public interface BeanFactory {
 
       Object getBean(Class configuationClass);
 
+      <T> T getBean(String name, Class<T> requiredType);
+
+      <T> T getBean(Class<T> requiredType, Object... args);
+
+      Object getBean(String name, Object... args);
+
       void addBeanPostProcessor(String id, BeanPostProcessor beanPostProcessor);
 }

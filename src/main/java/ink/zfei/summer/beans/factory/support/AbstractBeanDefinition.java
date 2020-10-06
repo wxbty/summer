@@ -1,18 +1,20 @@
 package ink.zfei.summer.beans.factory.support;
 
 import ink.zfei.summer.beans.BeanMetadataAttributeAccessor;
+import ink.zfei.summer.beans.MutablePropertyValues;
+import ink.zfei.summer.beans.factory.config.AutowireCapableBeanFactory;
 import ink.zfei.summer.beans.factory.config.BeanDefinition;
-import ink.zfei.summer.core.GenericBeanDefinition;
+import ink.zfei.summer.beans.factory.config.ConstructorArgumentValues;
 import ink.zfei.summer.util.ClassUtils;
-import ink.zfei.summer.util.ObjectUtils;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
-import java.util.function.Supplier;
+
+import static ink.zfei.summer.beans.factory.config.AutowireCapableBeanFactory.AUTOWIRE_AUTODETECT;
+import static ink.zfei.summer.beans.factory.config.AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE;
 
 /**
  * 具体的，成熟的{@link BeanDefinition}类的基类，
- * 不包含{@link GenericBeanDefinition}/root/child的父子属性。
+ * 不包含父子属性，父子属性在子类{@link GenericBeanDefinition}/root/child中才有。
  * <p>自动装配常数与在AutowireCapableBeanFactory接口。
  */
 @SuppressWarnings("serial")
@@ -23,14 +25,14 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     * Constant for the default scope name: {@code ""}, equivalent to singleton
 //     * status unless overridden from a parent bean definition (if applicable).
 //     */
-//    public static final String SCOPE_DEFAULT = "";
+    public static final String SCOPE_DEFAULT = "";
 //
 //    /**
 //     * Constant that indicates no external autowiring at all.
 //     *
 //     * @see #setAutowireMode
 //     */
-//    public static final int AUTOWIRE_NO = AutowireCapableBeanFactory.AUTOWIRE_NO;
+    public static final int AUTOWIRE_NO = AutowireCapableBeanFactory.AUTOWIRE_NO;
 //
 //    /**
 //     * Constant that indicates autowiring bean properties by name.
@@ -51,7 +53,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     *
 //     * @see #setAutowireMode
 //     */
-//    public static final int AUTOWIRE_CONSTRUCTOR = AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR;
+    public static final int AUTOWIRE_CONSTRUCTOR = AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR;
 //
 //    /**
 //     * Constant that indicates determining an appropriate autowire strategy
@@ -110,14 +112,14 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     private volatile Object beanClass;
 //
 //
-//    private String scope = SCOPE_DEFAULT;
+    private String scope = SCOPE_DEFAULT;
 //
-//    private boolean abstractFlag = false;
+    private boolean abstractFlag = false;
 //
 //
 //    private Boolean lazyInit;
 //
-//    private int autowireMode = AUTOWIRE_NO;
+    private int autowireMode = AUTOWIRE_NO;
 //
 //    private int dependencyCheck = DEPENDENCY_CHECK_NONE;
 //
@@ -126,30 +128,29 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //
 //    private boolean autowireCandidate = true;
 //
-//    private boolean primary = false;
+    private boolean primary = false;
 //
 //    private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>();
 //
 //
 //    private Supplier<?> instanceSupplier;
 //
-//    private boolean nonPublicAccessAllowed = true;
+    private boolean nonPublicAccessAllowed = true;
 //
 //    private boolean lenientConstructorResolution = true;
-//
-//
+
     private String factoryBeanName;
 
 
     private String factoryMethodName;
+
+    //构造函数参数
+    private ConstructorArgumentValues constructorArgumentValues;
 //
 //
-//    private ConstructorArgumentValues constructorArgumentValues;
+    private MutablePropertyValues propertyValues;
 //
-//
-//    private MutablePropertyValues propertyValues;
-//
-//    private MethodOverrides methodOverrides = new MethodOverrides();
+    private MethodOverrides methodOverrides = new MethodOverrides();
 //
 //
     /**
@@ -178,18 +179,18 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //    /**
 //     * Create a new AbstractBeanDefinition with default settings.
 //     */
-//    protected AbstractBeanDefinition() {
-//        this(null, null);
-//    }
+    protected AbstractBeanDefinition() {
+        this(null, null);
+    }
 //
 //    /**
 //     * Create a new AbstractBeanDefinition with the given
 //     * constructor argument values and property values.
 //     */
-//    protected AbstractBeanDefinition(ConstructorArgumentValues cargs, MutablePropertyValues pvs) {
-//        this.constructorArgumentValues = cargs;
-//        this.propertyValues = pvs;
-//    }
+    protected AbstractBeanDefinition(ConstructorArgumentValues cargs, MutablePropertyValues pvs) {
+        this.constructorArgumentValues = cargs;
+        this.propertyValues = pvs;
+    }
 //
 //    /**
 //     * Create a new AbstractBeanDefinition as a deep copy of the given
@@ -197,22 +198,22 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     *
 //     * @param original the original bean definition to copy from
 //     */
-//    protected AbstractBeanDefinition(BeanDefinition original) {
-//        setParentName(original.getParentName());
-//        setBeanClassName(original.getBeanClassName());
+    protected AbstractBeanDefinition(BeanDefinition original) {
+        setParentName(original.getParentName());
+        setBeanClassName(original.getBeanClassName());
 //        setScope(original.getScope());
 //        setAbstract(original.isAbstract());
-//        setFactoryBeanName(original.getFactoryBeanName());
-//        setFactoryMethodName(original.getFactoryMethodName());
+        setFactoryBeanName(original.getFactoryBeanName());
+        setFactoryMethodName(original.getFactoryMethodName());
 //        setRole(original.getRole());
-//        setSource(original.getSource());
-//        copyAttributesFrom(original);
-//
-//        if (original instanceof AbstractBeanDefinition) {
-//            AbstractBeanDefinition originalAbd = (AbstractBeanDefinition) original;
-//            if (originalAbd.hasBeanClass()) {
-//                setBeanClass(originalAbd.getBeanClass());
-//            }
+        setSource(original.getSource());
+        copyAttributesFrom(original);
+
+        if (original instanceof AbstractBeanDefinition) {
+            AbstractBeanDefinition originalAbd = (AbstractBeanDefinition) original;
+            if (originalAbd.hasBeanClass()) {
+                setBeanClass(originalAbd.getBeanClass());
+            }
 //            if (originalAbd.hasConstructorArgumentValues()) {
 //                setConstructorArgumentValues(new ConstructorArgumentValues(original.getConstructorArgumentValues()));
 //            }
@@ -235,19 +236,19 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //            setInstanceSupplier(originalAbd.getInstanceSupplier());
 //            setNonPublicAccessAllowed(originalAbd.isNonPublicAccessAllowed());
 //            setLenientConstructorResolution(originalAbd.isLenientConstructorResolution());
-//            setInitMethodName(originalAbd.getInitMethodName());
+            setInitMethodName(originalAbd.getInitMethodName());
 //            setEnforceInitMethod(originalAbd.isEnforceInitMethod());
 //            setDestroyMethodName(originalAbd.getDestroyMethodName());
 //            setEnforceDestroyMethod(originalAbd.isEnforceDestroyMethod());
 //            setSynthetic(originalAbd.isSynthetic());
 //            setResource(originalAbd.getResource());
-//        } else {
+        } else {
 //            setConstructorArgumentValues(new ConstructorArgumentValues(original.getConstructorArgumentValues()));
 //            setPropertyValues(new MutablePropertyValues(original.getPropertyValues()));
 //            setLazyInit(original.isLazyInit());
 //            setResourceDescription(original.getResourceDescription());
-//        }
-//    }
+        }
+    }
 //
 //
 //    /**
@@ -475,46 +476,24 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        return this.scope;
 //    }
 //
-//    /**
-//     * Return whether this a <b>Singleton</b>, with a single shared instance
-//     * returned from all calls.
-//     *
-//     * @see #SCOPE_SINGLETON
-//     */
-//    @Override
-//    public boolean isSingleton() {
-//        return SCOPE_SINGLETON.equals(this.scope) || SCOPE_DEFAULT.equals(this.scope);
-//    }
+
+    @Override
+    public boolean isSingleton() {
+        return SCOPE_SINGLETON.equals(this.scope) || SCOPE_DEFAULT.equals(this.scope);
+    }
+    @Override
+    public boolean isPrototype() {
+        return SCOPE_PROTOTYPE.equals(this.scope);
+    }
 //
-//    /**
-//     * Return whether this a <b>Prototype</b>, with an independent instance
-//     * returned for each call.
-//     *
-//     * @see #SCOPE_PROTOTYPE
-//     */
-//    @Override
-//    public boolean isPrototype() {
-//        return SCOPE_PROTOTYPE.equals(this.scope);
-//    }
-//
-//    /**
-//     * Set if this bean is "abstract", i.e. not meant to be instantiated itself but
-//     * rather just serving as parent for concrete child bean definitions.
-//     * <p>Default is "false". Specify true to tell the bean factory to not try to
-//     * instantiate that particular bean in any case.
-//     */
-//    public void setAbstract(boolean abstractFlag) {
-//        this.abstractFlag = abstractFlag;
-//    }
-//
-//    /**
-//     * Return whether this bean is "abstract", i.e. not meant to be instantiated
-//     * itself but rather just serving as parent for concrete child bean definitions.
-//     */
-//    @Override
-//    public boolean isAbstract() {
-//        return this.abstractFlag;
-//    }
+    public void setAbstract(boolean abstractFlag) {
+        this.abstractFlag = abstractFlag;
+    }
+
+    @Override
+    public boolean isAbstract() {
+        return this.abstractFlag;
+    }
 //
 //    /**
 //     * Set whether this bean should be lazily initialized.
@@ -582,22 +561,22 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     * @see #AUTOWIRE_CONSTRUCTOR
 //     * @see #AUTOWIRE_BY_TYPE
 //     */
-//    public int getResolvedAutowireMode() {
-//        if (this.autowireMode == AUTOWIRE_AUTODETECT) {
-//            // Work out whether to apply setter autowiring or constructor autowiring.
-//            // If it has a no-arg constructor it's deemed to be setter autowiring,
-//            // otherwise we'll try constructor autowiring.
-//            Constructor<?>[] constructors = getBeanClass().getConstructors();
-//            for (Constructor<?> constructor : constructors) {
-//                if (constructor.getParameterCount() == 0) {
-//                    return AUTOWIRE_BY_TYPE;
-//                }
-//            }
-//            return AUTOWIRE_CONSTRUCTOR;
-//        } else {
-//            return this.autowireMode;
-//        }
-//    }
+    public int getResolvedAutowireMode() {
+        if (this.autowireMode == AUTOWIRE_AUTODETECT) {
+            // Work out whether to apply setter autowiring or constructor autowiring.
+            // If it has a no-arg constructor it's deemed to be setter autowiring,
+            // otherwise we'll try constructor autowiring.
+            Constructor<?>[] constructors = getBeanClass().getConstructors();
+            for (Constructor<?> constructor : constructors) {
+                if (constructor.getParameterCount() == 0) {
+                    return AUTOWIRE_BY_TYPE;
+                }
+            }
+            return AUTOWIRE_CONSTRUCTOR;
+        } else {
+            return this.autowireMode;
+        }
+    }
 //
 //    /**
 //     * Set the dependency check code.
@@ -677,10 +656,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //    /**
 //     * Return whether this bean is a primary autowire candidate.
 //     */
-//    @Override
-//    public boolean isPrimary() {
-//        return this.primary;
-//    }
+    @Override
+    public boolean isPrimary() {
+        return this.primary;
+    }
 //
 //    /**
 //     * Register a qualifier to be used for autowire candidate resolution,
@@ -769,9 +748,9 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //    /**
 //     * Return whether to allow access to non-public constructors and methods.
 //     */
-//    public boolean isNonPublicAccessAllowed() {
-//        return this.nonPublicAccessAllowed;
-//    }
+    public boolean isNonPublicAccessAllowed() {
+        return this.nonPublicAccessAllowed;
+    }
 //
 //    /**
 //     * Specify whether to resolve constructors in lenient mode ({@code true},
@@ -833,31 +812,26 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        return this.factoryMethodName;
 //    }
 //
-//    /**
-//     * Specify constructor argument values for this bean.
-//     */
-//    public void setConstructorArgumentValues(ConstructorArgumentValues constructorArgumentValues) {
-//        this.constructorArgumentValues = constructorArgumentValues;
-//    }
-//
-//    /**
-//     * Return constructor argument values for this bean (never {@code null}).
-//     */
-//    @Override
-//    public ConstructorArgumentValues getConstructorArgumentValues() {
-//        if (this.constructorArgumentValues == null) {
-//            this.constructorArgumentValues = new ConstructorArgumentValues();
-//        }
-//        return this.constructorArgumentValues;
-//    }
-//
-//    /**
-//     * Return if there are constructor argument values defined for this bean.
-//     */
-//    @Override
-//    public boolean hasConstructorArgumentValues() {
-//        return (this.constructorArgumentValues != null && !this.constructorArgumentValues.isEmpty());
-//    }
+
+    public void setConstructorArgumentValues(ConstructorArgumentValues constructorArgumentValues) {
+        this.constructorArgumentValues = constructorArgumentValues;
+    }
+
+    @Override
+    public ConstructorArgumentValues getConstructorArgumentValues() {
+        if (this.constructorArgumentValues == null) {
+            this.constructorArgumentValues = new ConstructorArgumentValues();
+        }
+        return this.constructorArgumentValues;
+    }
+
+    /**
+     * Return if there are constructor argument values defined for this bean.
+     */
+    @Override
+    public boolean hasConstructorArgumentValues() {
+        return (this.constructorArgumentValues != null && !this.constructorArgumentValues.isEmpty());
+    }
 //
 //    /**
 //     * Specify property values for this bean, if any.
@@ -866,26 +840,26 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        this.propertyValues = propertyValues;
 //    }
 //
-//    /**
-//     * Return property values for this bean (never {@code null}).
-//     */
-//    @Override
-//    public MutablePropertyValues getPropertyValues() {
-//        if (this.propertyValues == null) {
-//            this.propertyValues = new MutablePropertyValues();
-//        }
-//        return this.propertyValues;
-//    }
+    /**
+     * Return property values for this bean (never {@code null}).
+     */
+    @Override
+    public MutablePropertyValues getPropertyValues() {
+        if (this.propertyValues == null) {
+            this.propertyValues = new MutablePropertyValues();
+        }
+        return this.propertyValues;
+    }
 //
 //    /**
 //     * Return if there are property values values defined for this bean.
 //     *
 //     * @since 5.0.2
 //     */
-//    @Override
-//    public boolean hasPropertyValues() {
-//        return (this.propertyValues != null && !this.propertyValues.isEmpty());
-//    }
+    @Override
+    public boolean hasPropertyValues() {
+        return (this.propertyValues != null && !this.propertyValues.isEmpty());
+    }
 //
 //    /**
 //     * Specify method overrides for the bean, if any.
@@ -899,18 +873,18 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     * container. This will be empty if there are no method overrides.
 //     * <p>Never returns {@code null}.
 //     */
-//    public MethodOverrides getMethodOverrides() {
-//        return this.methodOverrides;
-//    }
+    public MethodOverrides getMethodOverrides() {
+        return this.methodOverrides;
+    }
 //
 //    /**
 //     * Return if there are method overrides defined for this bean.
 //     *
 //     * @since 5.0.2
 //     */
-//    public boolean hasMethodOverrides() {
-//        return !this.methodOverrides.isEmpty();
-//    }
+    public boolean hasMethodOverrides() {
+        return !this.methodOverrides.isEmpty();
+    }
 //
 //    /**
 //     * Set the name of the initializer method.
@@ -1105,18 +1079,20 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        }
 //    }
 //
-//    /**
-//     * Validate and prepare the method overrides defined for this bean.
-//     * Checks for existence of a method with the specified name.
-//     *
-//     * @throws BeanDefinitionValidationException in case of validation failure
-//     */
-//    public void prepareMethodOverrides() throws BeanDefinitionValidationException {
-//        // Check that lookup methods exist and determine their overloaded status.
+    /**
+     * todo 单例依赖多例时，可以利用lookup-method注入多例bean，这里先解析有几个重载方法
+     * <bean id="fruitPlate1" class="cn.com.willchen.test.di.FruitPlate">
+     *   <lookup-method name="getFruit" bean="apple"/>
+     *  </bean>
+     * Checks for existence of a method with the specified name.
+     *
+     */
+    public void prepareMethodOverrides()  {
+
 //        if (hasMethodOverrides()) {
 //            getMethodOverrides().getOverrides().forEach(this::prepareMethodOverride);
 //        }
-//    }
+    }
 //
 //    /**
 //     * Validate and prepare the given method override.

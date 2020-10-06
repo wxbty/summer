@@ -6,8 +6,8 @@ import bean.Person;
 import bean.Player;
 import bean.configuration.MyImportSelect;
 import ink.zfei.summer.annation.Import;
-import ink.zfei.summer.core.annation.Bean;
-import ink.zfei.summer.core.annation.Configuration;
+import ink.zfei.summer.core.annotation.Bean;
+import ink.zfei.summer.core.annotation.Configuration;
 
 @Configuration
 @Import({Player.class, MyImportSelect.class})
@@ -23,8 +23,10 @@ public class MyConfiguation {
     public Device device() {
         Device device = new Device();
         device.setPerson(person());
-        return new Device();
+        return device;
     }
+
+
 
 
 }

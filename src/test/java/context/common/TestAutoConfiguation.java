@@ -2,10 +2,8 @@ package context.common;
 
 
 import bean.Water;
-import bean.configuration.MyImportSelect;
-import ink.zfei.summer.annation.Import;
-import ink.zfei.summer.core.annation.Bean;
-import ink.zfei.summer.core.annation.Configuration;
+import ink.zfei.summer.core.annotation.Bean;
+import ink.zfei.summer.core.annotation.Configuration;
 
 @Configuration
 public class TestAutoConfiguation {

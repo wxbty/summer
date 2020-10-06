@@ -1,6 +1,6 @@
-package ink.zfei.summer.core.annation;
+package ink.zfei.summer.core.annotation;
 
-import ink.zfei.summer.core.GenericBeanDefinition;
+import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 
 public class RootBeanDefination extends GenericBeanDefinition {
 

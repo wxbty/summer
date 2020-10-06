@@ -5,6 +5,7 @@ import bean.annotation.NonOrder;
 import bean.annotation.Order;
 import context.common.CommonProcessorConfiguation;
 import context.common.Iperson;
+import ink.zfei.summer.beans.factory.NoSuchBeanDefinitionException;
 import ink.zfei.summer.context.AnnotationConfigApplicationContext;
 import ink.zfei.summer.core.ApplicationListener;
 import ink.zfei.summer.core.io.support.SpringFactoriesLoader;
@@ -22,8 +23,11 @@ public class AnnotationContextText {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Order.class.getPackage().getName());
         Order order = (Order) ctx.getBean("order");
         Assert.assertNotNull(order);
-        NonOrder nonOrder = (NonOrder) ctx.getBean("nonOrder");
-        Assert.assertNull(nonOrder);
+        try {
+            ctx.getBean("nonOrder");
+        } catch (NoSuchBeanDefinitionException e) {
+            Assert.assertNotNull(e);
+        }
     }
 
     @Test
@@ -67,10 +71,15 @@ public class AnnotationContextText {
     @Test
     public void loadSpringFactories() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        List<String> list = SpringFactoriesLoader.loadFactoryNames(ApplicationListener.class,loader);
+        List<String> list = SpringFactoriesLoader.loadFactoryNames(ApplicationListener.class, loader);
         Assert.assertTrue(list.contains("context.common.StartWebServerListener"));
     }
 
-
+    @Test
+    public void factoryBean() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(CommonProcessorConfiguation.class);
+        Object personMapper = ctx.getBean("personMapper");
+        Assert.assertTrue(personMapper instanceof PersonMapper);
+    }
 
 }
