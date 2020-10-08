@@ -26,6 +26,11 @@ public class MyConfiguation {
         return device;
     }
 
+    @Bean
+    public Player player() {
+        return new Player();
+    }
+
 
 
 

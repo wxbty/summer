@@ -103,6 +103,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     }
 
+    public String[] getAliases(String name) {
+        return new String[]{name};
+    }
+
     public void prepareBeanFactory(AbstractApplicationContext applicationContext) {
         String id = "applicationContextAwareProcessor";
 //        GenericBeanDefinition beanDefinition = new GenericBeanDefinition();

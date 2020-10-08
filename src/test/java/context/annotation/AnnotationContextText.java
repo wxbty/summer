@@ -1,7 +1,6 @@
 package context.annotation;
 
 import bean.*;
-import bean.annotation.NonOrder;
 import bean.annotation.Order;
 import context.common.CommonProcessorConfiguation;
 import context.common.Iperson;
@@ -35,6 +34,13 @@ public class AnnotationContextText {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfiguation.class);
         Device device = (Device) ctx.getBean("device");
         Assert.assertNotNull(device);
+    }
+
+    @Test
+    public void resource() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfiguation.class);
+        Player player = (Player) ctx.getBean("player");
+        player.name();
     }
 
     @Test

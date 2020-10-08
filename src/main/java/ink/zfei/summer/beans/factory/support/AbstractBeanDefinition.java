@@ -96,19 +96,14 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     */
 //    public static final int DEPENDENCY_CHECK_ALL = 3;
 //
-//    /**
-//     * Constant that indicates the container should attempt to infer the
-//     * {@link #setDestroyMethodName destroy method name} for a bean as opposed to
-//     * explicit specification of a method name. The value {@value} is specifically
-//     * designed to include characters otherwise illegal in a method name, ensuring
-//     * no possibility of collisions with legitimately named methods having the same
-//     * name.
-//     * <p>Currently, the method names detected during destroy method inference
-//     * are "close" and "shutdown", if present on the specific bean class.
-//     */
-//    public static final String INFER_METHOD = "(inferred)";
-//
-//
+
+    public static final String INFER_METHOD = "(inferred)";
+
+    /**
+     * 通常是bean的全类名，Class类型或者String类型，在bean真正实例化前，会resolveBeanClass
+     * 即把String类型class转换为Class类型
+     * 可为空，如配置类通过@Bean定义的beanDefinition没有beanClass，而是通过工厂方法发射生成实例
+     */
     private volatile Object beanClass;
 //
 //
@@ -167,7 +162,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //
 //    private boolean synthetic = false;
 //
-//    private int role = BeanDefinition.ROLE_APPLICATION;
+    private int role = BeanDefinition.ROLE_APPLICATION;
 //
 //
 //    private String description;
@@ -205,7 +200,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        setAbstract(original.isAbstract());
         setFactoryBeanName(original.getFactoryBeanName());
         setFactoryMethodName(original.getFactoryMethodName());
-//        setRole(original.getRole());
+        setRole(original.getRole());
         setSource(original.getSource());
         copyAttributesFrom(original);
 
@@ -976,21 +971,21 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        return this.synthetic;
 //    }
 //
-//    /**
-//     * Set the role hint for this {@code BeanDefinition}.
-//     */
-//    @Override
-//    public void setRole(int role) {
-//        this.role = role;
-//    }
-//
-//    /**
-//     * Return the role hint for this {@code BeanDefinition}.
-//     */
-//    @Override
-//    public int getRole() {
-//        return this.role;
-//    }
+    /**
+     * Set the role hint for this {@code BeanDefinition}.
+     */
+    @Override
+    public void setRole(int role) {
+        this.role = role;
+    }
+
+    /**
+     * Return the role hint for this {@code BeanDefinition}.
+     */
+    @Override
+    public int getRole() {
+        return this.role;
+    }
 //
 //    /**
 //     * Set a human-readable description of this bean definition.

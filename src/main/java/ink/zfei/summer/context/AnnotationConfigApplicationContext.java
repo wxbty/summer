@@ -24,6 +24,10 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
 
     Map<String, String> maps = new ConcurrentHashMap<>();
 
+    public AnnotationConfigApplicationContext() {
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(this);
+    }
+
     public List<GenericBeanDefinition> getConfigBeanDefinitions() {
         return configBeanDefinitions;
     }
