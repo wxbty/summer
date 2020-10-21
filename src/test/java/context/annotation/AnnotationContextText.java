@@ -88,4 +88,12 @@ public class AnnotationContextText {
         Assert.assertTrue(personMapper instanceof PersonMapper);
     }
 
+    @Test
+    public void ConstructorInject() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Person.class.getPackage().getName());
+        IndexController indexController = (IndexController) ctx.getBean("indexController");
+        Assert.assertNotNull(indexController);
+        Assert.assertNotNull(indexController.getPerson());
+    }
+
 }

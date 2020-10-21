@@ -1,13 +1,13 @@
 package ink.zfei.summer.context;
 
 import ink.zfei.summer.annation.Component;
-import ink.zfei.summer.core.AbstractApplicationContext;
 import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
+import ink.zfei.summer.core.AbstractApplicationContext;
 import ink.zfei.summer.core.annotation.AnnotationConfigUtils;
 import ink.zfei.summer.core.annotation.Bean;
 import ink.zfei.summer.core.annotation.Configuration;
 import ink.zfei.summer.util.AnnationUtil;
-import org.apache.commons.lang3.StringUtils;
+import ink.zfei.summer.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,7 +15,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -34,8 +37,8 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
 
     public List<GenericBeanDefinition> configBeanDefinitions = new ArrayList<>();
 
-    public AnnotationConfigApplicationContext(String basePackages)  {
-        super();
+    public AnnotationConfigApplicationContext(String basePackages) {
+        this();
         try {
             scan(basePackages);
         } catch (IOException | URISyntaxException | ClassNotFoundException e) {
@@ -46,7 +49,7 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
     }
 
     public AnnotationConfigApplicationContext(String basePackages, Class<?> componentClasses) {
-        super();
+        this();
         try {
             AnnotationConfigUtils.registerAnnotationConfigProcessors(this);
             register(componentClasses);
@@ -58,13 +61,8 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
     }
 
     public AnnotationConfigApplicationContext(Class<?> componentClasses) {
-
-        //1、注册一个bean工厂后置处理器，负责注册配置类里拿到的bean信息
-        AnnotationConfigUtils.registerAnnotationConfigProcessors(this);
-
-        //2、解析传入的配置类
+        this();
         register(componentClasses);
-
         refresh();
 
     }
@@ -129,8 +127,16 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
 
         URL url = list.get(0);
         File dir = new File(AnnationUtil.toURI(url.toString()).getSchemeSpecificPart());
-        for (File content : AnnationUtil.listDirectory(dir)) {
+        loadScanBean(basePackages, dir);
 
+    }
+
+    private void loadScanBean(String basePackages, File dir) throws ClassNotFoundException {
+        for (File content : AnnationUtil.listDirectory(dir)) {
+            if (content.isDirectory()) {
+                loadScanBean(basePackages + "." + content.getName(), content);
+                return;
+            }
             String className = content.getAbsolutePath();
             className = className.replace(File.separatorChar, '.');
             className = className.substring(className.indexOf(basePackages));
@@ -145,7 +151,7 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
             Component component = aClass.getAnnotation(Component.class);
             if (component != null) {
                 String beanName = component.value();
-                if (StringUtils.isBlank(beanName)) {
+                if (StringUtils.isEmpty(beanName)) {
                     beanName = aClass.getSimpleName();
                     beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
                 }
@@ -153,19 +159,16 @@ public class AnnotationConfigApplicationContext extends AbstractApplicationConte
             }
 
         }
-
     }
 
 
-    @Override
-    public <T> T getBean(String name, Class<T> requiredType) {
-        return null;
-    }
 
     @Override
     public <T> T getBean(Class<T> requiredType, Object... args) {
         return null;
     }
+
+
 
     @Override
     public Object getBean(String name, Object... args) {

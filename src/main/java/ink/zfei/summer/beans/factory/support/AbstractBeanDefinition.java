@@ -21,19 +21,19 @@ import static ink.zfei.summer.beans.factory.config.AutowireCapableBeanFactory.AU
 public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccessor
         implements BeanDefinition, Cloneable {
 
-//    /**
+    //    /**
 //     * Constant for the default scope name: {@code ""}, equivalent to singleton
 //     * status unless overridden from a parent bean definition (if applicable).
 //     */
     public static final String SCOPE_DEFAULT = "";
-//
+    //
 //    /**
 //     * Constant that indicates no external autowiring at all.
 //     *
 //     * @see #setAutowireMode
 //     */
     public static final int AUTOWIRE_NO = AutowireCapableBeanFactory.AUTOWIRE_NO;
-//
+    //
 //    /**
 //     * Constant that indicates autowiring bean properties by name.
 //     *
@@ -105,12 +105,12 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
      * 可为空，如配置类通过@Bean定义的beanDefinition没有beanClass，而是通过工厂方法发射生成实例
      */
     private volatile Object beanClass;
-//
+    //
 //
     private String scope = SCOPE_DEFAULT;
-//
+    //
     private boolean abstractFlag = false;
-//
+    //
 //
 //    private Boolean lazyInit;
 //
@@ -120,11 +120,11 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //
 //
 //    private String[] dependsOn;
-//
-//    private boolean autowireCandidate = true;
-//
+
+    private boolean autowireCandidate = true;
+    //
     private boolean primary = false;
-//
+    //
 //    private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>();
 //
 //
@@ -141,10 +141,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
     //构造函数参数
     private ConstructorArgumentValues constructorArgumentValues;
-//
+    //
 //
     private MutablePropertyValues propertyValues;
-//
+    //
     private MethodOverrides methodOverrides = new MethodOverrides();
 //
 //
@@ -152,7 +152,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
      * 初始化方法
      */
     private String initMethodName;
-//
+    //
 //
 //    private String destroyMethodName;
 //
@@ -163,7 +163,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //    private boolean synthetic = false;
 //
     private int role = BeanDefinition.ROLE_APPLICATION;
-//
+    //
 //
 //    private String description;
 //
@@ -177,7 +177,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     protected AbstractBeanDefinition() {
         this(null, null);
     }
-//
+    //
 //    /**
 //     * Create a new AbstractBeanDefinition with the given
 //     * constructor argument values and property values.
@@ -186,7 +186,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
         this.constructorArgumentValues = cargs;
         this.propertyValues = pvs;
     }
-//
+    //
 //    /**
 //     * Create a new AbstractBeanDefinition as a deep copy of the given
 //     * bean definition.
@@ -244,7 +244,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //            setResourceDescription(original.getResourceDescription());
         }
     }
-//
+    //
 //
 //    /**
 //     * Override settings in this bean definition (presumably a copied parent
@@ -352,7 +352,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public void setBeanClassName(String beanClassName) {
         this.beanClass = beanClassName;
     }
-//
+    //
 //    /**
 //     * Return the current bean class name of this bean definition.
 //     */
@@ -369,7 +369,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public void setBeanClass(Class<?> beanClass) {
         this.beanClass = beanClass;
     }
-//
+    //
 //    /**
 //     * Return the specified class of the bean definition (assuming it is resolved already).
 //     * <p><b>NOTE:</b> This is an initial class reference as declared in the bean metadata
@@ -403,7 +403,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
         }
         return (Class<?>) beanClassObject;
     }
-//
+    //
 //    /**
 //     * Return whether this definition specifies a bean class.
 //     *
@@ -414,7 +414,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public boolean hasBeanClass() {
         return (this.beanClass instanceof Class);
     }
-//
+    //
 //    /**
 //     * Determine the class of the wrapped bean, resolving it from a
 //     * specified class name if necessary. Will also reload a specified
@@ -480,7 +480,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public boolean isPrototype() {
         return SCOPE_PROTOTYPE.equals(this.scope);
     }
-//
+    //
     public void setAbstract(boolean abstractFlag) {
         this.abstractFlag = abstractFlag;
     }
@@ -489,7 +489,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public boolean isAbstract() {
         return this.abstractFlag;
     }
-//
+    //
 //    /**
 //     * Set whether this bean should be lazily initialized.
 //     * <p>If {@code false}, the bean will get instantiated on startup by bean
@@ -572,7 +572,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
             return this.autowireMode;
         }
     }
-//
+    //
 //    /**
 //     * Set the dependency check code.
 //     *
@@ -625,19 +625,19 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     * @see #AUTOWIRE_BY_TYPE
 //     * @see #AUTOWIRE_BY_NAME
 //     */
-//    @Override
-//    public void setAutowireCandidate(boolean autowireCandidate) {
-//        this.autowireCandidate = autowireCandidate;
-//    }
-//
+    @Override
+    public void setAutowireCandidate(boolean autowireCandidate) {
+        this.autowireCandidate = autowireCandidate;
+    }
+    //
 //    /**
 //     * Return whether this bean is a candidate for getting autowired into some other bean.
 //     */
-//    @Override
-//    public boolean isAutowireCandidate() {
-//        return this.autowireCandidate;
-//    }
-//
+    @Override
+    public boolean isAutowireCandidate() {
+        return this.autowireCandidate;
+    }
+    //
 //    /**
 //     * Set whether this bean is a primary autowire candidate.
 //     * <p>If this value is {@code true} for exactly one bean among multiple
@@ -655,7 +655,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public boolean isPrimary() {
         return this.primary;
     }
-//
+    //
 //    /**
 //     * Register a qualifier to be used for autowire candidate resolution,
 //     * keyed by the qualifier's type name.
@@ -845,7 +845,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
         }
         return this.propertyValues;
     }
-//
+    //
 //    /**
 //     * Return if there are property values values defined for this bean.
 //     *
@@ -855,7 +855,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public boolean hasPropertyValues() {
         return (this.propertyValues != null && !this.propertyValues.isEmpty());
     }
-//
+    //
 //    /**
 //     * Specify method overrides for the bean, if any.
 //     */
@@ -871,7 +871,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public MethodOverrides getMethodOverrides() {
         return this.methodOverrides;
     }
-//
+    //
 //    /**
 //     * Return if there are method overrides defined for this bean.
 //     *
@@ -880,7 +880,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public boolean hasMethodOverrides() {
         return !this.methodOverrides.isEmpty();
     }
-//
+    //
 //    /**
 //     * Set the name of the initializer method.
 //     * <p>The default is {@code null} in which case there is no initializer method.
@@ -889,7 +889,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public void setInitMethodName(String initMethodName) {
         this.initMethodName = initMethodName;
     }
-//
+    //
 //    /**
 //     * Return the name of the initializer method.
 //     */

@@ -43,12 +43,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
                     throw new BeanInstantiationException(clazz, "Specified class is an interface");
                 }
                 try {
-                    if (System.getSecurityManager() != null) {
-                        constructorToUse = AccessController.doPrivileged(
-                                (PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
-                    } else {
-                        constructorToUse = clazz.getDeclaredConstructor();
-                    }
+                    constructorToUse = clazz.getDeclaredConstructor();
                     bd.resolvedConstructorOrFactoryMethod = constructorToUse;
                 } catch (Throwable ex) {
                     throw new BeanInstantiationException(clazz, "No default constructor found", ex);

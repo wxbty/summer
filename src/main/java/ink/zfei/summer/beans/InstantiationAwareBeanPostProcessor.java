@@ -1,5 +1,7 @@
 package ink.zfei.summer.beans;
 
+import java.lang.reflect.Constructor;
+
 public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
 
 
@@ -13,6 +15,11 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
     }
 
     default PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName) {
+
+        return null;
+    }
+
+    default Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, String beanName) {
 
         return null;
     }

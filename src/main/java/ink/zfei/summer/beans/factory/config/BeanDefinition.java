@@ -75,6 +75,8 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
         return !getConstructorArgumentValues().isEmpty();
     }
 
+    void setAutowireCandidate(boolean autowireCandidate);
+
     boolean isAutowireCandidate();
 
     boolean isPrimary();

@@ -70,10 +70,6 @@ public class GenericBeanDefinition extends AbstractBeanDefinition {
         return factoryMethodName;
     }
 
-    @Override
-    public boolean isAutowireCandidate() {
-        return false;
-    }
 
     public void setFactoryMethodName(String factoryMethodName) {
         this.factoryMethodName = factoryMethodName;

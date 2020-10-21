@@ -389,7 +389,7 @@ public class DependencyDescriptor extends InjectionPoint implements Serializable
         return false;
     }
 
-    @com.sun.istack.internal.Nullable
+    @Nullable
     public Object resolveNotUnique(ResolvableType type, Map<String, Object> matchingBeans) {
         return null;
     }

@@ -26,4 +26,8 @@ public interface BeanFactory {
      * 内置配置通过别名场景化命名，在自己系统中使用
      */
     String[] getAliases(String name);
+
+    boolean containsBeanDefinition(String beanName);
+
+    Class<?> getType(String name);
 }

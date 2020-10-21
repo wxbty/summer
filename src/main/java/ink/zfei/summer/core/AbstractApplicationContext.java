@@ -1,10 +1,12 @@
 package ink.zfei.summer.core;
 
+import com.sun.corba.se.impl.io.TypeMismatchException;
 import com.sun.istack.internal.Nullable;
 import ink.zfei.summer.beans.*;
 import ink.zfei.summer.beans.factory.*;
 import ink.zfei.summer.beans.factory.config.*;
 import ink.zfei.summer.beans.factory.support.*;
+import ink.zfei.summer.context.support.PostProcessorRegistrationDelegate;
 import ink.zfei.summer.core.convert.ConversionService;
 import ink.zfei.summer.util.*;
 import org.apache.commons.logging.Log;
@@ -157,6 +159,8 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
 
     private void registerBeanPostProcessors() {
+
+        PostProcessorRegistrationDelegate.registerBeanPostProcessors(this);
 
         //1、遍历beanDefination，把BeanPostProcessors类型的bean
         beanDefinitionNames.stream().filter(id -> {
@@ -804,6 +808,12 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
         }
         if (instanceWrapper == null) {
+            /*
+             * createBeanInstance中包含三种创建 bean 实例的方式：
+             * 1. 通过工厂方法创建 bean 实例
+             * 2. 通过构造方法自动注入（autowire by constructor）的方式创建 bean 实例
+             * 3. 通过无参构造方法方法创建 bean 实例
+             */
             instanceWrapper = createBeanInstance(beanName, mbd, args);
         }
         final Object bean = instanceWrapper.getWrappedInstance();
@@ -864,31 +874,40 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             return instantiateUsingFactoryMethod(beanName, mbd, args);
         }
 
-        // Shortcut when re-creating the same bean...
+        // 创建同样的bean时，如果之前已经解析过（最终使用哪个构造器构造），直接使用之前的构造器
         boolean resolved = false;
+        // autowireNecessary: 是否需要自动注入（即是否需要解析构造函数参数）
         boolean autowireNecessary = false;
         if (args == null) {
+            // 如果resolvedConstructorOrFactoryMethod缓存不为空，则将resolved标记为已解析
             if (mbd.resolvedConstructorOrFactoryMethod != null) {
                 resolved = true;
                 autowireNecessary = mbd.constructorArgumentsResolved;
             }
         }
+
         if (resolved) {
+            // 3.如果已经解析过，则使用
+            // resolvedConstructorOrFactoryMethod缓存里解析好的构造函数方法
             if (autowireNecessary) {
+                // 3.1 需要自动注入，则执行构造函数自动注入
+                // 通过构造方法自动装备的方式构造Bean对象
                 return autowireConstructor(beanName, mbd, null, null);
             } else {
+                // 3.2 否则使用默认的构造函数进行bean的实例化
+                // 如果已经解析了构造方法的参数，则必须要通过一个带参构造方法来实例
                 return instantiateBean(beanName, mbd);
             }
         }
 
-        // Candidate constructors for autowiring?
+        // 后置处理器决定使用哪个构造器
         Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
         if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
                 mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
             return autowireConstructor(beanName, mbd, ctors, args);
         }
 
-        // Preferred constructors for default construction?
+        // 首选构造器
         ctors = mbd.getPreferredConstructors();
         if (ctors != null) {
             return autowireConstructor(beanName, mbd, ctors, null);
@@ -1073,6 +1092,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         return cachedReturnType.resolve();
     }
 
+    @Override
     public Class<?> getType(String name) throws NoSuchBeanDefinitionException {
         String beanName = transformedBeanName(name);
 
@@ -1164,8 +1184,24 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     @Override
     public void addBeanPostProcessor(String id, BeanPostProcessor beanPostProcessor) {
+        this.beanPostProcessors.remove(beanPostProcessor);
+        if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+            this.hasInstantiationAwareBeanPostProcessors = true;
+        }
         this.beanPostProcessors.add(beanPostProcessor);
         singletonObjects.put(id, beanPostProcessor);
+    }
+
+    public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
+        Assert.notNull(beanPostProcessor, "BeanPostProcessor must not be null");
+        // Remove from old position, if any
+        this.beanPostProcessors.remove(beanPostProcessor);
+        // Track whether it is instantiation/destruction aware
+        if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+            this.hasInstantiationAwareBeanPostProcessors = true;
+        }
+        this.beanPostProcessors.remove(beanPostProcessor);
+        this.beanPostProcessors.add(beanPostProcessor);
     }
 
     public List<String> getConfiguationNames() {
@@ -1303,6 +1339,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         return this.singletonObjects.containsKey(beanName);
     }
 
+    @Override
     public boolean containsBeanDefinition(String beanName) {
         Assert.notNull(beanName, "Bean name must not be null");
         return this.beanDefinitionMap.containsKey(beanName);
@@ -2428,4 +2465,38 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         return (candidateName != null &&
                 (candidateName.equals(beanName)));
     }
+
+    @Override
+    public <T> T getBean(String name, Class<T> requiredType) {
+        return doGetBean(name, requiredType, null, false);
+    }
+
+
+    protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
+                              @Nullable final Object[] args, boolean typeCheckOnly) {
+
+        final String beanName = transformedBeanName(name);
+        Object bean = null;
+
+        // Eagerly check singleton cache for manually registered singletons.
+        Object sharedInstance = getSingleton(beanName);
+        if (sharedInstance != null && args == null) {
+            bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
+        } else {
+            // Fail if we're already creating this bean instance:
+            // We're assumably within a circular reference.
+            if (isPrototypeCurrentlyInCreation(beanName)) {
+                throw new BeanCurrentlyInCreationException(beanName);
+            }
+
+            GenericBeanDefinition mbd = (GenericBeanDefinition) getBeanDefinition(beanName);
+            if (mbd.isSingleton()) {
+                sharedInstance = getSingleton(beanName, () -> createBean(beanName, mbd, args));
+                bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
+            }
+        }
+        return (T) bean;
+
+    }
+
 }

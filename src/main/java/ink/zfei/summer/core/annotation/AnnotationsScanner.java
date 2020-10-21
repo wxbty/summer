@@ -1,6 +1,7 @@
 package ink.zfei.summer.core.annotation;
 
 import ink.zfei.summer.core.BridgeMethodResolver;
+import ink.zfei.summer.core.Ordered;
 import ink.zfei.summer.core.ResolvableType;
 import ink.zfei.summer.lang.Nullable;
 
@@ -531,9 +532,9 @@ abstract class AnnotationsScanner {
         }
     }
 
-//    static boolean hasPlainJavaAnnotationsOnly(Class<?> type) {
-//        return (type.getName().startsWith("java.") || type == Ordered.class);
-//    }
+    static boolean hasPlainJavaAnnotationsOnly(Class<?> type) {
+        return (type.getName().startsWith("java.") || type == Ordered.class);
+    }
 
     private static boolean isWithoutHierarchy(AnnotatedElement source, SearchStrategy searchStrategy) {
         if (source == Object.class) {
