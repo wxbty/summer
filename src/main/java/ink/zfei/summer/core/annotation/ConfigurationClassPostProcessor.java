@@ -21,10 +21,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 
         AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) registry;
-        List<String> tmpList = new ArrayList<>(context.getConfiguationNames());
-        tmpList.forEach(configuationName -> {
-            loadFromConfiguration(context, configuationName);
-        });
+        List<String> tmpList = new ArrayList<>(context.getConfigurationNames());
+        tmpList.forEach(configurationName -> loadFromConfiguration(context, configurationName));
 
 
     }

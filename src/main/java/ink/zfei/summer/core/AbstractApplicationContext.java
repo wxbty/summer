@@ -1,6 +1,5 @@
 package ink.zfei.summer.core;
 
-import com.sun.corba.se.impl.io.TypeMismatchException;
 import ink.zfei.summer.beans.*;
 import ink.zfei.summer.beans.factory.*;
 import ink.zfei.summer.beans.factory.config.*;
@@ -19,12 +18,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.security.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,7 +54,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
 
     private volatile List<String> beanDefinitionNames = new ArrayList<>(256);
 
-    private volatile List<String> configuationNames = new ArrayList<>(256);
+    private volatile List<String> configurationNames = new ArrayList<>(256);
 
     private ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
 
@@ -1159,8 +1156,8 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         beanDefinitionNames.add(beanDefinition.getId());
     }
 
-    public void registerConfiguation(String configuationName) {
-        configuationNames.add(configuationName);
+    public void registerConfiguration(String configurationName) {
+        configurationNames.add(configurationName);
     }
 
     @Override
@@ -1204,8 +1201,8 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         this.beanPostProcessors.add(beanPostProcessor);
     }
 
-    public List<String> getConfiguationNames() {
-        return configuationNames;
+    public List<String> getConfigurationNames() {
+        return configurationNames;
     }
 
     public void setDisplayName(String displayName) {
