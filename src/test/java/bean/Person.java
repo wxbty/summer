@@ -1,8 +1,10 @@
 package bean;
 
+import ink.zfei.summer.annation.Component;
 import ink.zfei.summer.beans.factory.InitializingBean;
 import context.common.Iperson;
 
+@Component
 public class Person implements InitializingBean, Iperson {
 
 //    @Override

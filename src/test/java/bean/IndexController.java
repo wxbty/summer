@@ -1,5 +1,8 @@
 package bean;
 
+import ink.zfei.summer.annation.Component;
+
+@Component
 public class IndexController {
 
     private Person person;
@@ -7,6 +10,7 @@ public class IndexController {
 
     public IndexController(Person person,Lion lion) {
         this.person = person;
+        this.lion = lion;
     }
 
     public Person getPerson() {
