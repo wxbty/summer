@@ -88,11 +88,6 @@ public class GenericBeanDefinition extends AbstractBeanDefinition {
         return scope;
     }
 
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
-
-
     public String getId() {
         return id;
     }

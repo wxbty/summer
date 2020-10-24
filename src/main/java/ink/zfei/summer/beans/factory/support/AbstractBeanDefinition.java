@@ -196,8 +196,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     protected AbstractBeanDefinition(BeanDefinition original) {
         setParentName(original.getParentName());
         setBeanClassName(original.getBeanClassName());
-//        setScope(original.getScope());
-//        setAbstract(original.isAbstract());
+        setScope(original.getScope());
+        setAbstract(original.isAbstract());
         setFactoryBeanName(original.getFactoryBeanName());
         setFactoryMethodName(original.getFactoryMethodName());
         setRole(original.getRole());
@@ -209,12 +209,12 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
             if (originalAbd.hasBeanClass()) {
                 setBeanClass(originalAbd.getBeanClass());
             }
-//            if (originalAbd.hasConstructorArgumentValues()) {
-//                setConstructorArgumentValues(new ConstructorArgumentValues(original.getConstructorArgumentValues()));
-//            }
-//            if (originalAbd.hasPropertyValues()) {
-//                setPropertyValues(new MutablePropertyValues(original.getPropertyValues()));
-//            }
+            if (originalAbd.hasConstructorArgumentValues()) {
+                setConstructorArgumentValues(new ConstructorArgumentValues(original.getConstructorArgumentValues()));
+            }
+            if (originalAbd.hasPropertyValues()) {
+                setPropertyValues(new MutablePropertyValues(original.getPropertyValues()));
+            }
 //            if (originalAbd.hasMethodOverrides()) {
 //                setMethodOverrides(new MethodOverrides(originalAbd.getMethodOverrides()));
 //            }
@@ -446,30 +446,18 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        return (hasBeanClass() ? ResolvableType.forClass(getBeanClass()) : ResolvableType.NONE);
 //    }
 //
-//    /**
-//     * Set the name of the target scope for the bean.
-//     * <p>The default is singleton status, although this is only applied once
-//     * a bean definition becomes active in the containing factory. A bean
-//     * definition may eventually inherit its scope from a parent bean definition.
-//     * For this reason, the default scope name is an empty string (i.e., {@code ""}),
-//     * with singleton status being assumed until a resolved scope is set.
-//     *
-//     * @see #SCOPE_SINGLETON
-//     * @see #SCOPE_PROTOTYPE
-//     */
-//    @Override
-//    public void setScope(String scope) {
-//        this.scope = scope;
-//    }
+    @Override
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
 //
 //    /**
 //     * Return the name of the target scope for the bean.
 //     */
-//    @Override
-//
-//    public String getScope() {
-//        return this.scope;
-//    }
+    @Override
+    public String getScope() {
+        return this.scope;
+    }
 //
 
     @Override
@@ -827,13 +815,10 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     public boolean hasConstructorArgumentValues() {
         return (this.constructorArgumentValues != null && !this.constructorArgumentValues.isEmpty());
     }
-//
-//    /**
-//     * Specify property values for this bean, if any.
-//     */
-//    public void setPropertyValues(MutablePropertyValues propertyValues) {
-//        this.propertyValues = propertyValues;
-//    }
+
+    public void setPropertyValues(MutablePropertyValues propertyValues) {
+        this.propertyValues = propertyValues;
+    }
 //
     /**
      * Return property values for this bean (never {@code null}).
@@ -851,7 +836,6 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //     *
 //     * @since 5.0.2
 //     */
-    @Override
     public boolean hasPropertyValues() {
         return (this.propertyValues != null && !this.propertyValues.isEmpty());
     }

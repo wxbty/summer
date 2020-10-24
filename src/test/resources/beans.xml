@@ -1,7 +1,7 @@
 <beans>
     <bean id="person"  class="bean.Person" >
-<!--        <property name="name" value="zhangsan"></property>-->
-        <property name="device" ref="device"></property>
+<!--&lt;!&ndash;        <property name="name" value="zhangsan"></property>&ndash;&gt;-->
+<!--        <property name="device" ref="device"></property>-->
     </bean>
 
     <bean id="device" class="bean.Device" scope="singleton">

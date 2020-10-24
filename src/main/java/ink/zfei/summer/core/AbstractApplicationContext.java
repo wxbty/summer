@@ -1,13 +1,13 @@
 package ink.zfei.summer.core;
 
 import com.sun.corba.se.impl.io.TypeMismatchException;
-import com.sun.istack.internal.Nullable;
 import ink.zfei.summer.beans.*;
 import ink.zfei.summer.beans.factory.*;
 import ink.zfei.summer.beans.factory.config.*;
 import ink.zfei.summer.beans.factory.support.*;
 import ink.zfei.summer.context.support.PostProcessorRegistrationDelegate;
 import ink.zfei.summer.core.convert.ConversionService;
+import ink.zfei.summer.lang.Nullable;
 import ink.zfei.summer.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1178,7 +1178,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             }
             throw new NoSuchBeanDefinitionException(beanName);
         }
-        return new GenericBeanDefinition(bd);
+        return bd;
     }
 
 

@@ -84,4 +84,8 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
     void setRole(int role);
 
     int getRole();
+
+    void setScope(String scope);
+
+    String getScope();
 }

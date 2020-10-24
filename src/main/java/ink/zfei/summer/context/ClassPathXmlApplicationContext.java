@@ -1,5 +1,7 @@
 package ink.zfei.summer.context;
 
+import ink.zfei.summer.beans.PropertyValue;
+import ink.zfei.summer.beans.factory.config.RuntimeBeanReference;
 import ink.zfei.summer.core.AbstractApplicationContext;
 import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.xmlParse.Beans;
@@ -111,18 +113,20 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
 
         List<Bean> beanList = beans.getBeanList();
         Map<String, GenericBeanDefinition> beanDefinationMap = beanList.stream().collect(Collectors.toMap(Bean::getId, bean -> {
-            GenericBeanDefinition beanDefination = new GenericBeanDefinition();
+            GenericBeanDefinition bd = new GenericBeanDefinition();
             try {
-                BeanUtils.copyProperties(beanDefination, bean);
-//                bean.getProperty().forEach(property -> {
-//                    beanDefination.putDep(property.getName(), property.getRef());
-//                });
+                BeanUtils.copyProperties(bd, bean);
+                bean.getProperty().forEach(property -> {
+                    RuntimeBeanReference ref = new RuntimeBeanReference(property.getRef());
+                    PropertyValue pv = new PropertyValue(property.getName(), ref);
+                    bd.getPropertyValues().addPropertyValue(pv);
+                });
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            beanDefination.setScope(bean.getScope() == null ? "singleton" : bean.getScope());
-            return beanDefination;
+            bd.setScope(bean.getScope() == null ? "singleton" : bean.getScope());
+            return bd;
         }));
 
         return beanDefinationMap;
