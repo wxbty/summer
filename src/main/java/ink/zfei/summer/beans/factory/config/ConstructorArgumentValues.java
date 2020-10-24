@@ -10,8 +10,15 @@ import java.util.*;
 
 public class ConstructorArgumentValues {
 
+    /*
+     *  注解自动注入构造器，indexedArgumentValues和genericArgumentValues为空
+     *  xml配置，且构造器配置为index，indexedArgumentValues存储构造数据
+     */
     private final Map<Integer, ValueHolder> indexedArgumentValues = new LinkedHashMap<>();
 
+    /*
+     *  xml配置，且构造器配置为type，genericArgumentValues存储构造数据
+     */
     private final List<ValueHolder> genericArgumentValues = new ArrayList<>();
 
 
@@ -106,7 +113,7 @@ public class ConstructorArgumentValues {
      * untyped values only)
      * @return the ValueHolder for the argument, or {@code null} if none set
      */
-    
+
     public ValueHolder getIndexedArgumentValue(int index,  Class<?> requiredType) {
         return getIndexedArgumentValue(index, requiredType, null);
     }
@@ -120,7 +127,7 @@ public class ConstructorArgumentValues {
      * unnamed values only, or empty String to match any name)
      * @return the ValueHolder for the argument, or {@code null} if none set
      */
-    
+
     public ValueHolder getIndexedArgumentValue(int index,  Class<?> requiredType,  String requiredName) {
         Assert.isTrue(index >= 0, "Index must not be negative");
         ValueHolder valueHolder = this.indexedArgumentValues.get(index);
@@ -205,7 +212,7 @@ public class ConstructorArgumentValues {
      * @param requiredType the type to match
      * @return the ValueHolder for the argument, or {@code null} if none set
      */
-    
+
     public ValueHolder getGenericArgumentValue(Class<?> requiredType) {
         return getGenericArgumentValue(requiredType, null, null);
     }
@@ -216,7 +223,7 @@ public class ConstructorArgumentValues {
      * @param requiredName the name to match
      * @return the ValueHolder for the argument, or {@code null} if none set
      */
-    
+
     public ValueHolder getGenericArgumentValue(Class<?> requiredType, String requiredName) {
         return getGenericArgumentValue(requiredType, requiredName, null);
     }
@@ -233,7 +240,7 @@ public class ConstructorArgumentValues {
      * in the current resolution process and should therefore not be returned again
      * @return the ValueHolder for the argument, or {@code null} if none found
      */
-    
+
     public ValueHolder getGenericArgumentValue( Class<?> requiredType,  String requiredName,  Set<ValueHolder> usedValueHolders) {
         for (ValueHolder valueHolder : this.genericArgumentValues) {
             if (usedValueHolders != null && usedValueHolders.contains(valueHolder)) {
@@ -273,7 +280,7 @@ public class ConstructorArgumentValues {
      * @param requiredType the parameter type to match
      * @return the ValueHolder for the argument, or {@code null} if none set
      */
-    
+
     public ValueHolder getArgumentValue(int index, Class<?> requiredType) {
         return getArgumentValue(index, requiredType, null, null);
     }
@@ -286,7 +293,7 @@ public class ConstructorArgumentValues {
      * @param requiredName the parameter name to match
      * @return the ValueHolder for the argument, or {@code null} if none set
      */
-    
+
     public ValueHolder getArgumentValue(int index, Class<?> requiredType, String requiredName) {
         return getArgumentValue(index, requiredType, requiredName, null);
     }
@@ -305,7 +312,7 @@ public class ConstructorArgumentValues {
      * in case of multiple generic argument values of the same type)
      * @return the ValueHolder for the argument, or {@code null} if none set
      */
-    
+
     public ValueHolder getArgumentValue(int index,  Class<?> requiredType,  String requiredName,  Set<ValueHolder> usedValueHolders) {
         Assert.isTrue(index >= 0, "Index must not be negative");
         ValueHolder valueHolder = getIndexedArgumentValue(index, requiredType, requiredName);
@@ -387,26 +394,33 @@ public class ConstructorArgumentValues {
 
 
     /**
-     * Holder for a constructor argument value, with an optional type
-     * attribute indicating the target type of the actual constructor argument.
+     *     只有xml容器，indexedArgumentValues不为空，ValueHolder作用是区别index、name、type
+     *     <bean id="persion" class="xxx.Person">
+     *         <constructor-arg index="0" value="xiaoming">;
+     *         <constructor-arg index="1" value="1">;
+     *         <constructor-arg index="2" value="man">;
+     *     </bean>
+     *     以上只要value不为空，ValueHolder的value是TypedStringValue，内部保存字符串xiaoming，其余属性null
+     *     index改为type，ValueHolder存储该type
+     *     index改为name，ValueHolder存储该name
      */
     public static class ValueHolder implements BeanMetadataElement {
 
-        
+
         private Object value;
 
-        
+
         private String type;
 
-        
+
         private String name;
 
-        
+
         private Object source;
 
         private boolean converted = false;
 
-        
+
         private Object convertedValue;
 
         /**
@@ -449,7 +463,7 @@ public class ConstructorArgumentValues {
         /**
          * Return the value for the constructor argument.
          */
-        
+
         public Object getValue() {
             return this.value;
         }
@@ -464,7 +478,7 @@ public class ConstructorArgumentValues {
         /**
          * Return the type of the constructor argument.
          */
-        
+
         public String getType() {
             return this.type;
         }
@@ -479,7 +493,7 @@ public class ConstructorArgumentValues {
         /**
          * Return the name of the constructor argument.
          */
-        
+
         public String getName() {
             return this.name;
         }
@@ -493,7 +507,7 @@ public class ConstructorArgumentValues {
         }
 
         @Override
-        
+
         public Object getSource() {
             return this.source;
         }
@@ -519,7 +533,7 @@ public class ConstructorArgumentValues {
          * Return the converted value of the constructor argument,
          * after processed type conversion.
          */
-        
+
         public synchronized Object getConvertedValue() {
             return this.convertedValue;
         }

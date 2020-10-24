@@ -1,3 +1,5 @@
+
+
 package context.annotation;
 
 import bean.*;
@@ -89,11 +91,20 @@ public class AnnotationContextText {
     }
 
     @Test
-    public void ConstructorInject() {
+    public void ConstructorSingleInject() {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Person.class.getPackage().getName());
         IndexController indexController = (IndexController) ctx.getBean("indexController");
         Assert.assertNotNull(indexController);
         Assert.assertNotNull(indexController.getPerson());
+    }
+
+    @Test
+    public void ConstructorMultiInject() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(Person.class.getPackage().getName());
+        IndexController indexController = (IndexController) ctx.getBean("indexController");
+        Assert.assertNotNull(indexController);
+        Assert.assertNotNull(indexController.getPerson());
+        Assert.assertNotNull(indexController.getLion());
     }
 
 }

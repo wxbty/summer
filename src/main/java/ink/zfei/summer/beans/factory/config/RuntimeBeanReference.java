@@ -3,6 +3,15 @@ package ink.zfei.summer.beans.factory.config;
 import ink.zfei.summer.lang.Nullable;
 import ink.zfei.summer.util.Assert;
 
+/*
+*  ValueHolder中的value保存的引用类型的数据
+*  <bean id="person" class="com.example.demo.Person">
+        <constructor-arg type="java.lang.String" value="xiaoming"/>
+        <constructor-arg type="int" value="1"/>
+        <constructor-arg type="com.example.demo.Poop" ref="poop"/>
+    </bean>
+    解析ref的时候，会new一个RuntimeBeanReference实例，beanName=popo，然后注入ValueHolder对象中，value=该实例
+*/
 public class RuntimeBeanReference implements BeanReference {
 
     private final String beanName;
@@ -18,6 +27,7 @@ public class RuntimeBeanReference implements BeanReference {
 
     /**
      * Create a new RuntimeBeanReference to the given bean name.
+     *
      * @param beanName name of the target bean
      */
     public RuntimeBeanReference(String beanName) {
@@ -27,9 +37,10 @@ public class RuntimeBeanReference implements BeanReference {
     /**
      * Create a new RuntimeBeanReference to the given bean name,
      * with the option to mark it as reference to a bean in the parent factory.
+     *
      * @param beanName name of the target bean
      * @param toParent whether this is an explicit reference to a bean in the
-     * parent factory
+     *                 parent factory
      */
     public RuntimeBeanReference(String beanName, boolean toParent) {
         Assert.hasText(beanName, "'beanName' must not be empty");
@@ -40,6 +51,7 @@ public class RuntimeBeanReference implements BeanReference {
 
     /**
      * Create a new RuntimeBeanReference to a bean of the given type.
+     *
      * @param beanType type of the target bean
      * @since 5.2
      */
@@ -50,9 +62,10 @@ public class RuntimeBeanReference implements BeanReference {
     /**
      * Create a new RuntimeBeanReference to a bean of the given type,
      * with the option to mark it as reference to a bean in the parent factory.
+     *
      * @param beanType type of the target bean
      * @param toParent whether this is an explicit reference to a bean in the
-     * parent factory
+     *                 parent factory
      * @since 5.2
      */
     public RuntimeBeanReference(Class<?> beanType, boolean toParent) {
@@ -66,6 +79,7 @@ public class RuntimeBeanReference implements BeanReference {
     /**
      * Return the requested bean name, or the fully-qualified type name
      * in case of by-type resolution.
+     *
      * @see #getBeanType()
      */
     @Override
@@ -75,6 +89,7 @@ public class RuntimeBeanReference implements BeanReference {
 
     /**
      * Return the requested bean type if resolution by type is demanded.
+     *
      * @since 5.2
      */
     @Nullable

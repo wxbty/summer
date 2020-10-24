@@ -3,7 +3,6 @@ package ink.zfei.summer.beans.factory.support;
 import ink.zfei.summer.beans.BeanWrapper;
 import ink.zfei.summer.beans.TypeConverter;
 import ink.zfei.summer.beans.factory.BeanCreationException;
-import ink.zfei.summer.beans.factory.BeanFactory;
 import ink.zfei.summer.beans.factory.BeanFactoryUtils;
 import ink.zfei.summer.beans.factory.FactoryBean;
 import ink.zfei.summer.beans.factory.config.*;
@@ -70,6 +69,7 @@ public class BeanDefinitionValueResolver {
         // We must check each value to see whether it requires a runtime reference
         // to another bean to be resolved.
         if (value instanceof RuntimeBeanReference) {
+            //如果是依赖的是引用，从bean工厂中获取对应实例返回
             RuntimeBeanReference ref = (RuntimeBeanReference) value;
             return resolveReference(argName, ref);
         } else if (value instanceof RuntimeBeanNameReference) {
@@ -104,6 +104,7 @@ public class BeanDefinitionValueResolver {
         // todo ManagedArray  ManagedList  ManagedSet ManagedMap ManagedProperties
         else if (value instanceof TypedStringValue) {
             // Convert value to target type here.
+            //TypedStringValue 并不是字符串类型，包含了string、int、long等，根据类型把字符串转换成对应类型对象
             TypedStringValue typedStringValue = (TypedStringValue) value;
             Object valueObject = evaluate(typedStringValue);
             try {
@@ -196,6 +197,7 @@ public class BeanDefinitionValueResolver {
 
     /**
      * Resolve a reference to another bean in the factory.
+     * 从bean工厂中解析依赖的引用对象（引用依赖注入最终实现）
      */
     @Nullable
     private Object resolveReference(Object argName, RuntimeBeanReference ref) {

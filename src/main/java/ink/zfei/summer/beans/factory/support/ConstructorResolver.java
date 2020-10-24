@@ -59,12 +59,8 @@ public class ConstructorResolver {
 
 
     /**
-     * "autowire constructor" (with constructor arguments by type) behavior.
-     * Also applied if explicit constructor argument values are specified,
-     * matching all remaining arguments with beans from the bean factory.
-     * <p>This corresponds to constructor injection: In this mode, a Spring
-     * bean factory is able to host components that expect constructor-based
-     * dependency resolution.
+     * 到这一步，哪些构造器（多个候选）已经决定，获取构造器的参数类型和bd中已解析的参数vals，反射匹配生成实例
+     * 这个方法要根据xml配置文件中惟一的bean配置找到合适的构造方法（可能有多个）并返回实例换包装类，
      *
      * @param beanName     the name of the bean
      * @param mbd          the merged bean definition for the bean
@@ -81,9 +77,11 @@ public class ConstructorResolver {
 
         Constructor<?> constructorToUse = null;
         ArgumentsHolder argsHolderToUse = null;
+        //最终被使用的参数值（被注入的实例对象）集合
         Object[] argsToUse = null;
 
         if (explicitArgs != null) {
+            //外部程序显示调用，如beanFactory.getBean("name",objs)
             argsToUse = explicitArgs;
         } else {
             Object[] argsToResolve = null;
@@ -96,6 +94,7 @@ public class ConstructorResolver {
                 }
             }
             if (argsToResolve != null) {
+                //如给定方法的构造函数 A(int,int)则通过此方法后就会把配置中的("1","1")转换为(1,1)
                 argsToUse = resolvePreparedArguments(beanName, mbd, bw, constructorToUse, argsToResolve, true);
             }
         }
@@ -126,15 +125,28 @@ public class ConstructorResolver {
                     mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
             ConstructorArgumentValues resolvedValues = null;
 
+            /*
+             * minNrOfArgs 的计算为后面寻找合适的构造方法做了准备，因为如果参数数量小于bean定义中配置的参数数量，那么肯定是不合适的构造函数。
+             */
             int minNrOfArgs;
             if (explicitArgs != null) {
                 minNrOfArgs = explicitArgs.length;
             } else {
                 ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
                 resolvedValues = new ConstructorArgumentValues();
+                /*
+                 * 根据bean定义配置计算构造函数至少有几个参数
+                 *     <bean id="persion" class="xyz.coolblog.autowire.Person">
+                 *         <constructor-arg index="0" value="xiaoming">;
+                 *         <constructor-arg index="2" value="man">;
+                 *     </bean>
+                 * 此时 minNrOfArgs = maxIndex + 1 = 3，除了计算 minNrOfArgs，
+                 * 下面的方法还会将 cargs 中的参数数据转存到 resolvedValues 中
+                 */
                 minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
             }
 
+            //先根据权限（public>protected）,再根据参数数量（倒序）排序
             AutowireUtils.sortConstructors(candidates);
             int minTypeDiffWeight = Integer.MAX_VALUE;
             Set<Constructor<?>> ambiguousConstructors = null;
@@ -142,11 +154,38 @@ public class ConstructorResolver {
             for (Constructor<?> candidate : candidates) {
                 int parameterCount = candidate.getParameterCount();
 
+                /*
+                 * 下面的 if 分支的用途是：若匹配到到合适的构造方法了，提前结束 for 循环
+                 * constructorToUse != null 这个条件比较好理解，下面分析一下条件 argsToUse.length > paramTypes.length：
+                 * 前面说到 AutowireUtils.sortConstructors(candidates) 用于对构造方法进行
+                 * 排序，排序规则如下：
+                 *   1. 具有 public 访问权限的构造方法排在非 public 构造方法前
+                 *   2. 参数数量多的构造方法排在前面
+                 *
+                 * 假设现在有一组构造方法按照上面的排序规则进行排序，排序结果如下（省略参数名称）：
+                 *
+                 *   1. public Hello(Object, Object, Object)
+                 *   2. public Hello(Object, Object)
+                 *   3. public Hello(Object)
+                 *   4. protected Hello(Integer, Object, Object, Object)
+                 *   5. protected Hello(Integer, Object, Object)
+                 *   6. protected Hello(Integer, Object)
+                 *
+                 * argsToUse = [num1, obj2]，可以匹配上的构造方法2和构造方法6。由于构造方法2有
+                 * 更高的访问权限，所以没理由不选他（尽管后者在参数类型上更加匹配）。由于构造方法3
+                 * 参数数量 < argsToUse.length，参数数量上不匹配，也不应该选。所以
+                 * argsToUse.length > paramTypes.length 这个条件用途是：在条件
+                 * constructorToUse != null 成立的情况下，通过判断参数数量与参数值数量
+                 * （argsToUse.length）是否一致，来决定是否提前终止构造方法匹配逻辑。
+                 */
+
                 if (constructorToUse != null && argsToUse != null && argsToUse.length > parameterCount) {
-                    // Already found greedy constructor that can be satisfied ->
-                    // do not look any further, there are only less greedy constructors left.
+                    // Already found greedy constructor that can be satisfied ->  已经找到合适的构造器
+                    // do not look any further, there are only less greedy constructors left. 参数只会更少
+                    //在已找到数量匹配的构造器下，只有一种情况会继续判断，就是数量匹配+参数更精准匹配（普通类>Object）
                     break;
                 }
+                //如果参数数量小于bean定义中配置的参数数量，不考虑
                 if (parameterCount < minNrOfArgs) {
                     continue;
                 }
@@ -154,12 +193,11 @@ public class ConstructorResolver {
                 ArgumentsHolder argsHolder;
                 Class<?>[] paramTypes = candidate.getParameterTypes();
                 if (resolvedValues != null) {
-                    String[] paramNames = ConstructorPropertiesChecker.evaluate(candidate, parameterCount);
-                    if (paramNames == null) {
-                        ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
-                        if (pnd != null) {
-                            paramNames = pnd.getParameterNames(candidate);
-                        }
+                    //xml中配置的值最终形态对象，如ref=person，这里就是Person对象实例
+                    String[] paramNames = null;
+                    ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
+                    if (pnd != null) {
+                        paramNames = pnd.getParameterNames(candidate);
                     }
                     argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
                             getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);
@@ -463,26 +501,33 @@ public class ConstructorResolver {
     }
 
     /**
-     * Resolve the constructor arguments for this bean into the resolvedValues object.
-     * This may involve looking up other beans.
-     * <p>This method is also used for handling invocations of static factory methods.
+     * 将此bean的构造函数参数解析为resolveValues对象
      */
     private int resolveConstructorArguments(String beanName, GenericBeanDefinition mbd, BeanWrapper bw,
                                             ConstructorArgumentValues cargs, ConstructorArgumentValues resolvedValues) {
 
         TypeConverter customConverter = this.beanFactory.getCustomTypeConverter();
         TypeConverter converter = (customConverter != null ? customConverter : bw);
+        //对Bean属性原始值的解析
         BeanDefinitionValueResolver valueResolver =
                 new BeanDefinitionValueResolver(this.beanFactory, beanName, mbd, converter);
 
+        //获取xml里type和index参数数量之和，这里并不代表所有数量，因为有可能会有自动注入的参数
         int minNrOfArgs = cargs.getArgumentCount();
 
+        //遍历所有xml中带index的参数
         for (Map.Entry<Integer, ConstructorArgumentValues.ValueHolder> entry : cargs.getIndexedArgumentValues().entrySet()) {
             int index = entry.getKey();
             if (index < 0) {
                 throw new BeanCreationException(beanName,
                         "Invalid constructor argument index: " + index);
             }
+            /**
+             * 如果下标大于参数个数，则参数个数应该是index+1
+             * 比如一个构造器，第一个参数是自动注入，第二个是xml里index=1注入
+             * 这里minNrOfArgs=1，因为只有一个参数在xml里配置，index=1，最后结果最小参数数量应该是2
+             * 这里老版本有个bug，判断条件是index>minNrOfArgs，造成明明有2个参数，但是没有赋值index+1，最终返回1
+             */
             if (index + 1 > minNrOfArgs) {
                 minNrOfArgs = index + 1;
             }
@@ -499,8 +544,10 @@ public class ConstructorResolver {
             }
         }
 
+        //遍历所有xml中带type的参数
         for (ConstructorArgumentValues.ValueHolder valueHolder : cargs.getGenericArgumentValues()) {
             if (valueHolder.isConverted()) {
+                //如果属性已经解析过，直接加到已解析缓存中
                 resolvedValues.addGenericArgumentValue(valueHolder);
             } else {
                 Object resolvedValue =
@@ -718,25 +765,4 @@ public class ConstructorResolver {
 
     }
 
-
-    /**
-     * Delegate for checking Java 6's {@link ConstructorProperties} annotation.
-     */
-    private static class ConstructorPropertiesChecker {
-
-        @Nullable
-        public static String[] evaluate(Constructor<?> candidate, int paramCount) {
-            ConstructorProperties cp = candidate.getAnnotation(ConstructorProperties.class);
-            if (cp != null) {
-                String[] names = cp.value();
-                if (names.length != paramCount) {
-                    throw new IllegalStateException("Constructor annotated with @ConstructorProperties but not " +
-                            "corresponding to actual number of parameters (" + paramCount + "): " + candidate);
-                }
-                return names;
-            } else {
-                return null;
-            }
-        }
-    }
 }
