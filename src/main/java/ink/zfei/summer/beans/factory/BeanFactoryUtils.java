@@ -73,7 +73,7 @@ public abstract class BeanFactoryUtils {
         return (separatorIndex != -1 ? name.substring(0, separatorIndex) : name);
     }
 
-    public static String[] beanNamesForTypeIncludingAncestors(AbstractApplicationContext lbf, Class<?> type) {
+    public static String[] beanNamesForTypeIncludingAncestors(ListableBeanFactory lbf, Class<?> type) {
         Assert.notNull(lbf, "ListableBeanFactory must not be null");
         String[] result = lbf.getBeanNamesForType(type);
         return result;

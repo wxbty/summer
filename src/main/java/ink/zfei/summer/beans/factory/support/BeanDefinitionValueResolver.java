@@ -18,7 +18,7 @@ import static ink.zfei.summer.beans.factory.BeanFactoryUtils.transformedBeanName
 
 public class BeanDefinitionValueResolver {
 
-    private final AbstractApplicationContext beanFactory;
+    private final AbstractAutowireCapableBeanFactory beanFactory;
 
     private final String beanName;
 
@@ -35,7 +35,7 @@ public class BeanDefinitionValueResolver {
      * @param beanDefinition the BeanDefinition of the bean that we work on
      * @param typeConverter  the TypeConverter to use for resolving TypedStringValues
      */
-    public BeanDefinitionValueResolver(AbstractApplicationContext beanFactory, String beanName,
+    public BeanDefinitionValueResolver(AbstractAutowireCapableBeanFactory beanFactory, String beanName,
                                        BeanDefinition beanDefinition, TypeConverter typeConverter) {
 
         this.beanFactory = beanFactory;

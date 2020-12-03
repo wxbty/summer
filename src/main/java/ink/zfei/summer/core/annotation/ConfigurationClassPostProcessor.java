@@ -20,10 +20,18 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
 
+
+        processConfigBeanDefinitions(registry);
+
+
+    }
+
+    public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
+        //1、scan
+        //2、this.reader.loadBeanDefinitions(configClasses);
         AnnotationConfigApplicationContext context = (AnnotationConfigApplicationContext) registry;
         List<String> tmpList = new ArrayList<>(context.getConfigurationNames());
         tmpList.forEach(configurationName -> loadFromConfiguration(context, configurationName));
-
 
     }
 
@@ -61,8 +69,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                                 String beanName = outClass.getSimpleName();
                                 beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
                                 selectBean.setId(beanName);
-                                registry.registerBeanDefinition(selectBean);
-                                registry.registerBeanDefinition(importBean);
+                                registry.registerBeanDefinition(beanName,selectBean);
+                                registry.registerBeanDefinition(importBean.getId(), importBean);
                             }
                         });
                     } else if (ImportBeanDefinitionRegistrar.class.isAssignableFrom(selectedClass)) {
@@ -70,7 +78,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                         registrar.registerBeanDefinitions(registry, clazz);
 
                     } else {
-                        registry.registerBeanDefinition(importBean);
+                        registry.registerBeanDefinition(importBean.getId(),importBean);
                     }
                 }
             }

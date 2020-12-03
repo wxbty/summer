@@ -81,6 +81,10 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
 
     boolean isPrimary();
 
+    void setLazyInit(boolean lazyInit);
+
+    boolean isLazyInit();
+
     void setRole(int role);
 
     int getRole();

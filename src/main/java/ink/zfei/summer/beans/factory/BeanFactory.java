@@ -1,6 +1,7 @@
 package ink.zfei.summer.beans.factory;
 
 import ink.zfei.summer.beans.BeanPostProcessor;
+import ink.zfei.summer.core.ResolvableType;
 
 public interface BeanFactory {
 
@@ -11,7 +12,7 @@ public interface BeanFactory {
 
     Object getBean(String name);
 
-    Object getBean(Class configuationClass);
+    <T> T getBean(Class<T> requiredType);
 
     <T> T getBean(String name, Class<T> requiredType);
 
@@ -27,7 +28,17 @@ public interface BeanFactory {
      */
     String[] getAliases(String name);
 
-    boolean containsBeanDefinition(String beanName);
-
     Class<?> getType(String name);
+
+    /**
+     * 判断名称是name的bean是否是匹配指定类型
+     * @param name
+     * @param typeToMatch
+     * @return
+     */
+    boolean isTypeMatch(String name, Class<?> typeToMatch);
+
+    boolean isTypeMatch(String name, ResolvableType typeToMatch);
+
+    boolean isSingleton(String name);
 }

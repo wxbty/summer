@@ -130,4 +130,9 @@ public class GenericBeanDefinition extends AbstractBeanDefinition {
         ResolvableType targetType = this.targetType;
         return (targetType != null ? targetType.resolve() : null);
     }
+
+    @Override
+    public GenericBeanDefinition cloneBeanDefinition() {
+        return new GenericBeanDefinition(this);
+    }
 }

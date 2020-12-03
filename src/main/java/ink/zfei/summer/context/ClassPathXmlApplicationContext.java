@@ -1,14 +1,18 @@
 package ink.zfei.summer.context;
 
 import ink.zfei.summer.beans.PropertyValue;
+import ink.zfei.summer.beans.factory.config.BeanDefinition;
+import ink.zfei.summer.beans.factory.config.ConfigurableListableBeanFactory;
 import ink.zfei.summer.beans.factory.config.RuntimeBeanReference;
 import ink.zfei.summer.core.AbstractApplicationContext;
 import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
+import ink.zfei.summer.core.ApplicationContext;
 import ink.zfei.summer.xmlParse.Beans;
 import ink.zfei.summer.xmlParse.Bean;
 import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -26,7 +30,6 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
         refresh();
     }
 
-    @Override
     protected Map<String, GenericBeanDefinition> loadBeanDefination() throws IOException {
 
         InputStream inputStream = ClassPathXmlApplicationContext.class.getClassLoader().getResourceAsStream(this.configPath);
@@ -146,5 +149,45 @@ public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
     @Override
     public Object getBean(String name, Object... args) {
         return null;
+    }
+
+    @Override
+    public void setParent(ApplicationContext parent) {
+
+    }
+
+    @Override
+    public ConfigurableListableBeanFactory getBeanFactory() throws IllegalStateException {
+        return null;
+    }
+
+    @Override
+    protected void refreshBeanFactory() {
+
+    }
+
+    @Override
+    protected void closeBeanFactory() {
+
+    }
+
+    @Override
+    public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) {
+
+    }
+
+    @Override
+    public void removeBeanDefinition(String beanName) {
+
+    }
+
+    @Override
+    public BeanDefinition getBeanDefinition(String beanName) {
+        return null;
+    }
+
+    @Override
+    public String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType) {
+        return new String[0];
     }
 }

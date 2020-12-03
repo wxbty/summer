@@ -45,14 +45,14 @@ public class ConstructorResolver {
 
     private final Log logger;
 
-    private final AbstractApplicationContext beanFactory;
+    private final AbstractAutowireCapableBeanFactory beanFactory;
 
     /**
      * Create a new ConstructorResolver for the given factory and instantiation strategy.
      *
      * @param beanFactory the BeanFactory to work with
      */
-    public ConstructorResolver(AbstractApplicationContext beanFactory) {
+    public ConstructorResolver(AbstractAutowireCapableBeanFactory beanFactory) {
         this.beanFactory = beanFactory;
         this.logger = beanFactory.getLogger();
     }
