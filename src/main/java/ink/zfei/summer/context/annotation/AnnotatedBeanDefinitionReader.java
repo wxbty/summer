@@ -26,6 +26,7 @@ public class AnnotatedBeanDefinitionReader {
         this.registry = registry;
 //        this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
         AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
+
     }
 
     public void register(Class<?>... componentClasses) {

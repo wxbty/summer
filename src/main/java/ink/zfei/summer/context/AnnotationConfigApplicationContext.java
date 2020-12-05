@@ -4,6 +4,7 @@ import ink.zfei.summer.annation.Component;
 import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.context.annotation.AnnotatedBeanDefinitionReader;
 import ink.zfei.summer.context.annotation.AnnotationConfigRegistry;
+import ink.zfei.summer.context.annotation.ClassPathBeanDefinitionScanner;
 import ink.zfei.summer.context.support.GenericApplicationContext;
 import ink.zfei.summer.core.annotation.AnnotationConfigUtils;
 import ink.zfei.summer.util.AnnationUtil;
@@ -26,10 +27,11 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 
     Map<String, String> maps = new ConcurrentHashMap<>();
     private final AnnotatedBeanDefinitionReader reader;
+    private final ClassPathBeanDefinitionScanner scanner;
 
     public AnnotationConfigApplicationContext() {
         this.reader = new AnnotatedBeanDefinitionReader(this);
-        AnnotationConfigUtils.registerAnnotationConfigProcessors(this);
+        this.scanner = new ClassPathBeanDefinitionScanner(this);
     }
 
     public List<GenericBeanDefinition> getConfigBeanDefinitions() {
@@ -38,27 +40,27 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 
     public List<GenericBeanDefinition> configBeanDefinitions = new ArrayList<>();
 
-    public AnnotationConfigApplicationContext(String basePackages) {
+    /**
+     * Create a new AnnotationConfigApplicationContext, scanning for components
+     * in the given packages, registering bean definitions for those components,
+     * and automatically refreshing the context.
+     * @param basePackages the packages to scan for component classes
+     */
+    public AnnotationConfigApplicationContext(String... basePackages) {
         this();
-        try {
-            scan(basePackages);
-        } catch (IOException | URISyntaxException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        scan(basePackages);
         refresh();
 
     }
 
+
     public AnnotationConfigApplicationContext(String basePackages, Class<?> componentClasses) {
         this();
-        try {
-            AnnotationConfigUtils.registerAnnotationConfigProcessors(this);
-            register(componentClasses);
-            scan(basePackages);
-            refresh();
-        } catch (IOException | ClassNotFoundException | URISyntaxException e) {
-            e.printStackTrace();
-        }
+        AnnotationConfigUtils.registerAnnotationConfigProcessors(this);
+        register(componentClasses);
+        scan(basePackages);
+        refresh();
+
     }
 
     public AnnotationConfigApplicationContext(Class<?> componentClasses) {
@@ -72,6 +74,11 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
     public void register(Class<?>... componentClasses) {
         Assert.notEmpty(componentClasses, "At least one component class must be specified");
         this.reader.register(componentClasses);
+    }
+
+    public void scan(String... basePackages) {
+        Assert.notEmpty(basePackages, "At least one base package must be specified");
+        this.scanner.scan(basePackages);
     }
 
 //    public void register(Class<?>... componentClasses) {
@@ -105,7 +112,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 //
 //    }
 
-//    @Override
+    //    @Override
     protected Map<String, GenericBeanDefinition> loadBeanDefination() {
 
         return maps.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> {
@@ -118,64 +125,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
     }
 
 
-    public void scan(String basePackages) throws IOException, URISyntaxException, ClassNotFoundException {
-        if (basePackages == null) {
-            throw new RuntimeException("At least one base package must be specified");
-        }
-        String path = AnnationUtil.resolveBasePackage(basePackages);
-
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-        List<URL> list = new ArrayList<>();
-        Enumeration<URL> resourceUrls = (cl != null ? cl.getResources(path) : ClassLoader.getSystemResources(path));
-        while (resourceUrls.hasMoreElements()) {
-            URL url = resourceUrls.nextElement();
-            list.add(url);
-        }
-
-        URL url = list.get(0);
-        File dir = new File(AnnationUtil.toURI(url.toString()).getSchemeSpecificPart());
-        loadScanBean(basePackages, dir);
-
-    }
-
-    private void loadScanBean(String basePackages, File dir) throws ClassNotFoundException {
-        for (File content : AnnationUtil.listDirectory(dir)) {
-            if (content.isDirectory()) {
-                loadScanBean(basePackages + "." + content.getName(), content);
-                return;
-            }
-            String className = content.getAbsolutePath();
-            className = className.replace(File.separatorChar, '.');
-            className = className.substring(className.indexOf(basePackages));
-
-            className = className.substring(0, className.length() - 6);
-//            //将/替换成. 得到全路径类名
-
-
-            //className = ink.zfei.annation.Component
-            // 加载Class类
-            Class<?> aClass = Class.forName(className);
-            Component component = aClass.getAnnotation(Component.class);
-            if (component != null) {
-                String beanName = component.value();
-                if (StringUtils.isEmpty(beanName)) {
-                    beanName = aClass.getSimpleName();
-                    beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
-                }
-                maps.put(beanName, className);
-            }
-
-        }
-    }
-
-
-
     @Override
     public <T> T getBean(Class<T> requiredType, Object... args) {
         return null;
     }
-
 
 
     @Override

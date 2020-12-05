@@ -14,4 +14,5 @@ public interface BeanDefinitionRegistry {
 
     BeanDefinition getBeanDefinition(String beanName);
 
+    int getBeanDefinitionCount();
 }

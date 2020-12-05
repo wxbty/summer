@@ -4,6 +4,8 @@ import ink.zfei.summer.beans.factory.BeanCreationException;
 import ink.zfei.summer.beans.factory.config.SmartInstantiationAwareBeanPostProcessor;
 import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.beans.factory.support.MergedBeanDefinitionPostProcessor;
+import ink.zfei.summer.core.Ordered;
+import ink.zfei.summer.core.PriorityOrdered;
 import ink.zfei.summer.core.annotation.AnnotationAttributes;
 import ink.zfei.summer.core.annotation.MergedAnnotation;
 import ink.zfei.summer.core.annotation.MergedAnnotations;
@@ -17,11 +19,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor {
+public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor, PriorityOrdered {
 
     private final Set<Class<? extends Annotation>> autowiredAnnotationTypes = new LinkedHashSet<>(4);
     private String requiredParameterName = "required";
     private boolean requiredParameterValue = true;
+    private int order = Ordered.LOWEST_PRECEDENCE - 2;
 
     public AutowiredAnnotationBeanPostProcessor() {
         this.autowiredAnnotationTypes.add(Autowired.class);
@@ -33,6 +36,10 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
     }
 
+    @Override
+    public int getOrder() {
+        return this.order;
+    }
 
     @Override
     public Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, final String beanName) {

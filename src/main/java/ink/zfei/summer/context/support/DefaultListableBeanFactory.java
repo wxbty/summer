@@ -53,7 +53,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
     @Override
     public <T> T getBean(String name, Class<T> requiredType) {
-        return null;
+        return doGetBean(name, requiredType, null, false);
     }
 
     @Override
