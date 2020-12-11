@@ -10,6 +10,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * 封装了各种注解，提供了注解属性的访问，这些属性
+ * 可能从其他注解源（source）合并，比如属性的属性（父属性），或alisFor
+ */
 public interface MergedAnnotation<A extends Annotation> {
 
     /**
@@ -19,26 +23,18 @@ public interface MergedAnnotation<A extends Annotation> {
 
 
     /**
-     * Get the {@code Class} reference for the actual annotation type.
-     * @return the annotation type
+     * 获取注解全类名
      */
     Class<A> getType();
 
     /**
-     * Determine if the annotation is present on the source. Considers
-     * {@linkplain #isDirectlyPresent() directly present} and
-     * {@linkplain #isMetaPresent() meta-present} annotations within the context
-     * of the {@link MergedAnnotations.SearchStrategy} used.
-     * @return {@code true} if the annotation is present
+     * 这个注解是否存在（包含父子注解），类似Optional<obj>
      */
     boolean isPresent();
 
     /**
-     * Determine if the annotation is directly present on the source.
-     * <p>A directly present annotation is one that the user has explicitly
-     * declared and not one that is {@linkplain #isMetaPresent() meta-present}
-     * or {@link Inherited @Inherited}.
-     * @return {@code true} if the annotation is directly present
+     * MergedAnnotation是根据元素（参数注解全类名）
+     * 获取，判断是否当前元素中存在该注解
      */
     boolean isDirectlyPresent();
 

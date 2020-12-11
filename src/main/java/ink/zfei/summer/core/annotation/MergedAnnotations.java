@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * 提供了MergedAnnotation集合访问
+ */
 public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>> {
 
     /**

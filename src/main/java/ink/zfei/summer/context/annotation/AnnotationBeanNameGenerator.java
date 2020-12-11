@@ -28,7 +28,17 @@ public class AnnotationBeanNameGenerator implements BeanNameGenerator {
     }
 
     private String determineBeanNameFromAnnotation(AnnotatedBeanDefinition definition) {
-        return null;
+
+        Class beanClass = null;
+        try {
+            beanClass = Class.forName(definition.getBeanClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        String beanName = beanClass.getSimpleName();
+        beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
+
+        return beanName;
     }
 
     protected String buildDefaultBeanName(BeanDefinition definition, BeanDefinitionRegistry registry) {
