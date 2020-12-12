@@ -11,10 +11,7 @@ import ink.zfei.summer.core.Ordered;
 import ink.zfei.summer.core.PriorityOrdered;
 import ink.zfei.summer.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PostProcessorRegistrationDelegate {
@@ -25,12 +22,12 @@ public class PostProcessorRegistrationDelegate {
             ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 
 
+        List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
         // Invoke BeanDefinitionRegistryPostProcessors first, if any.
         Set<String> processedBeans = new HashSet<>();
         if (beanFactory instanceof BeanDefinitionRegistry) {
             BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
             List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
-            List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
             for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
                 if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
                     BeanDefinitionRegistryPostProcessor registryProcessor =
@@ -42,18 +39,21 @@ public class PostProcessorRegistrationDelegate {
                     regularPostProcessors.add(postProcessor);
                 }
             }
-        }
 
-        List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
+            List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
-        String[] postProcessorNames =
-                beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
-        for (String ppName : postProcessorNames) {
-            if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
-                currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
-                processedBeans.add(ppName);
+            String[] postProcessorNames =
+                    beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
+            for (String ppName : postProcessorNames) {
+                if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+                    currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
+                    processedBeans.add(ppName);
+                }
             }
+            registryProcessors.addAll(currentRegistryProcessors);
+            invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
         }
+
 
 
 //        List<String> tmpBeanDefinitionNames = new ArrayList<>(beanDefinitionNames);
@@ -90,6 +90,17 @@ public class PostProcessorRegistrationDelegate {
 
         //2、把当前的spring容器传入BeanFactoryPostProcessor，执行invoke方法
 
+    }
+
+    /**
+     * Invoke the given BeanDefinitionRegistryPostProcessor beans.
+     */
+    private static void invokeBeanDefinitionRegistryPostProcessors(
+            Collection<? extends BeanDefinitionRegistryPostProcessor> postProcessors, BeanDefinitionRegistry registry) {
+
+        for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
+            postProcessor.postProcessBeanDefinitionRegistry(registry);
+        }
     }
 
 

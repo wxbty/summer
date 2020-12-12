@@ -97,18 +97,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 //        registerConfiguration(componentClasses.getName());
 //
 ////        boolean isPorxy = annotations.proxyBeanMethods();
-//        Method[] methods = componentClasses.getMethods();
-//        for (Method method : methods) {
-//            Bean bean = method.getAnnotation(Bean.class);
-//            if (bean != null) {
-//                GenericBeanDefinition definition = new GenericBeanDefinition();
-//                definition.setId(method.getName());
-//                definition.setFactoryBeanName(beanName);
-//                definition.setFactoryMethodName(method.getName());
-//                registerBeanDefinition(definition);
-//                configBeanDefinitions.add(definition);
-//            }
-//        }
+
 //
 //    }
 

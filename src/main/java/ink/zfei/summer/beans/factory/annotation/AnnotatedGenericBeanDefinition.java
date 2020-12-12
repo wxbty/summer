@@ -13,4 +13,8 @@ public class AnnotatedGenericBeanDefinition extends GenericBeanDefinition implem
         this.metadata = AnnotationMetadata.introspect(beanClass);
     }
 
+    @Override
+    public AnnotationMetadata getMetadata() {
+        return metadata;
+    }
 }

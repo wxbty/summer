@@ -5,6 +5,8 @@ import ink.zfei.summer.core.annotation.MergedAnnotations;
 import ink.zfei.summer.core.annotation.MergedAnnotations.SearchStrategy;
 import ink.zfei.summer.core.annotation.RepeatableContainers;
 
+import java.util.Set;
+
 public class StandardAnnotationMetadata extends StandardClassMetadata implements AnnotationMetadata {
 
     private final MergedAnnotations mergedAnnotations;
@@ -20,10 +22,15 @@ public class StandardAnnotationMetadata extends StandardClassMetadata implements
 
     @Override
     public MergedAnnotations getAnnotations() {
-        return null;
+        return this.mergedAnnotations;
     }
 
     static AnnotationMetadata from(Class<?> introspectedClass) {
         return new StandardAnnotationMetadata(introspectedClass, true);
+    }
+
+    @Override
+    public Set<MethodMetadata> getAnnotatedMethods(String annotationName) {
+        return null;
     }
 }

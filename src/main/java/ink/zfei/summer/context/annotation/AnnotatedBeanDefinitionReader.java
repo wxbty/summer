@@ -3,16 +3,13 @@ package ink.zfei.summer.context.annotation;
 import ink.zfei.summer.beans.BeanDefinitionRegistry;
 import ink.zfei.summer.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import ink.zfei.summer.beans.factory.support.BeanNameGenerator;
-import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.core.annotation.AnnotationConfigUtils;
-import ink.zfei.summer.core.annotation.Bean;
 import ink.zfei.summer.core.annotation.Configuration;
 import ink.zfei.summer.core.env.Environment;
 import ink.zfei.summer.util.AnnationUtil;
 import ink.zfei.summer.util.Assert;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 public class AnnotatedBeanDefinitionReader {
 

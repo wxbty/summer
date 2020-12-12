@@ -13,7 +13,7 @@ public class StandardClassMetadata implements ClassMetadata {
 
     @Override
     public String getClassName() {
-        return null;
+        return this.introspectedClass.getName();
     }
 
     @Override

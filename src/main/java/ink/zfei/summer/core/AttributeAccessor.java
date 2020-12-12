@@ -5,6 +5,7 @@ package ink.zfei.summer.core;
  */
 public interface AttributeAccessor {
 
+    //比如标记一个bd是否配置类
     void setAttribute(String name, Object value);
 
     Object getAttribute(String name);

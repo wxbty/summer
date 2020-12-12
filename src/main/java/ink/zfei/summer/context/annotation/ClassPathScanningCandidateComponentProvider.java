@@ -5,6 +5,9 @@ import ink.zfei.summer.beans.factory.config.BeanDefinition;
 import ink.zfei.summer.core.io.Resource;
 import ink.zfei.summer.core.io.support.PathMatchingResourcePatternResolver;
 import ink.zfei.summer.core.io.support.ResourcePatternResolver;
+import ink.zfei.summer.core.type.classreading.CachingMetadataReaderFactory;
+import ink.zfei.summer.core.type.classreading.MetadataReader;
+import ink.zfei.summer.core.type.classreading.MetadataReaderFactory;
 import ink.zfei.summer.lang.Nullable;
 import ink.zfei.summer.util.AnnationUtil;
 import ink.zfei.summer.util.StringUtils;
@@ -20,6 +23,8 @@ import static ink.zfei.summer.util.AnnationUtil.resolveBasePackage;
 public class ClassPathScanningCandidateComponentProvider {
 
     static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
+
+    private MetadataReaderFactory metadataReaderFactory;
 
     private String resourcePattern = DEFAULT_RESOURCE_PATTERN;
 
@@ -93,7 +98,10 @@ public class ClassPathScanningCandidateComponentProvider {
                     beanName = aClass.getSimpleName();
                     beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
                 }
-                ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition();
+
+                Resource resource = null;
+                MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+                ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
                 sbd.setBeanClassName(className);
 
                 candidates.add(sbd);
@@ -108,5 +116,12 @@ public class ClassPathScanningCandidateComponentProvider {
             this.resourcePatternResolver = new PathMatchingResourcePatternResolver();
         }
         return this.resourcePatternResolver;
+    }
+
+    public final MetadataReaderFactory getMetadataReaderFactory() {
+        if (this.metadataReaderFactory == null) {
+            this.metadataReaderFactory = new CachingMetadataReaderFactory();
+        }
+        return this.metadataReaderFactory;
     }
 }

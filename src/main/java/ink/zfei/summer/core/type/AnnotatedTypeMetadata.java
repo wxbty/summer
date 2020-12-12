@@ -23,7 +23,7 @@ public interface AnnotatedTypeMetadata {
     }
 
     /**
-     *  这个就厉害了：取得指定类型注解的所有的属性 - 值（k-v）
+     *  这个厉害：取得指定类型注解的所有的属性 - 值（k-v）
      * 	classValuesAsString：若是true表示 Class用它的字符串的全类名来表示。
      * 	这样可以避免Class被提前加载
      */

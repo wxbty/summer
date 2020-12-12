@@ -1,7 +1,7 @@
 package ink.zfei.summer.core;
 
-import ink.zfei.summer.context.AnnotationConfigApplicationContext;
+import ink.zfei.summer.beans.BeanDefinitionRegistry;
 
 public interface ImportBeanDefinitionRegistrar {
-   void registerBeanDefinitions(AnnotationConfigApplicationContext registry, Class configClass);
+   void registerBeanDefinitions(BeanDefinitionRegistry registry, Class configClass);
 }
