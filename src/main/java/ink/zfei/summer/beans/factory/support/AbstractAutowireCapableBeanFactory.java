@@ -42,13 +42,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     protected final Log logger = LogFactory.getLog(this.getClass());
     private ParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
-    private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList<>();
     //@bean类型class对应的method集合，缓存下来不需要每次都解析
     private final ConcurrentMap<Class<?>, Method[]> factoryMethodCandidateCache = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, BeanWrapper> factoryBeanInstanceCache = new ConcurrentHashMap<>();
     private InstantiationStrategy instantiationStrategy = new CglibSubclassingInstantiationStrategy();
     private ConversionService conversionService;
-    private volatile boolean hasInstantiationAwareBeanPostProcessors;
     private TypeConverter typeConverter;
     private AutowireCandidateResolver autowireCandidateResolver = SimpleAutowireCandidateResolver.INSTANCE;
     private final Map<String, Object> singletonObjects = new ConcurrentHashMap<String, Object>();
@@ -260,9 +258,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return null;
     }
 
-    private List<BeanPostProcessor> getBeanPostProcessors() {
-        return beanPostProcessors;
-    }
+
 
     public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName) {
 
@@ -642,9 +638,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return null;
     }
 
-    protected boolean hasInstantiationAwareBeanPostProcessors() {
-        return this.hasInstantiationAwareBeanPostProcessors;
-    }
+
 
     protected void autowireByName(
             String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {

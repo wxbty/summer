@@ -549,4 +549,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
         return ((containsSingleton(beanName) || containsBeanDefinition(beanName)) &&
                 (!BeanFactoryUtils.isFactoryDereference(name) || isFactoryBean(beanName)));
     }
+
+    public List<BeanPostProcessor> getBeanPostProcessors() {
+        return beanPostProcessors;
+    }
+
+    protected boolean hasInstantiationAwareBeanPostProcessors() {
+        return this.hasInstantiationAwareBeanPostProcessors;
+    }
 }

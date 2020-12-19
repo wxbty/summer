@@ -19,6 +19,7 @@ public interface InstantiationAwareBeanPostProcessor extends BeanPostProcessor {
         return null;
     }
 
+
     default Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, String beanName) {
 
         return null;
