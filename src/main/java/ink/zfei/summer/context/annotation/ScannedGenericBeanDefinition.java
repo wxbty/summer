@@ -6,18 +6,19 @@ import ink.zfei.summer.core.type.AnnotationMetadata;
 import ink.zfei.summer.core.type.classreading.MetadataReader;
 import ink.zfei.summer.util.Assert;
 
+
 public class ScannedGenericBeanDefinition extends GenericBeanDefinition implements AnnotatedBeanDefinition {
 
     private final AnnotationMetadata metadata;
 
-    public ScannedGenericBeanDefinition(MetadataReader metadataReader) {
-        Assert.notNull(metadataReader, "MetadataReader must not be null");
-        this.metadata = metadataReader.getAnnotationMetadata();
-        setBeanClassName(this.metadata.getClassName());
+
+    public ScannedGenericBeanDefinition(Class<?> beanClass) {
+        setBeanClass(beanClass);
+        this.metadata = AnnotationMetadata.introspect(beanClass);
     }
 
     @Override
     public AnnotationMetadata getMetadata() {
-        return null;
+        return metadata;
     }
 }

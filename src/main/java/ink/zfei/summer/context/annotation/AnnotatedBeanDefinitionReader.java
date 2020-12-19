@@ -45,6 +45,7 @@ public class AnnotatedBeanDefinitionReader {
             throw new RuntimeException("不是配置类");
         }
 //        GenericBeanDefinition abd = new GenericBeanDefinition(beanClass);
+
         AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
         //todo  条件注解过滤
 

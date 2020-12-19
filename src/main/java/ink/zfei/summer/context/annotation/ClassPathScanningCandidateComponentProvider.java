@@ -1,6 +1,7 @@
 package ink.zfei.summer.context.annotation;
 
 import ink.zfei.summer.annation.Component;
+import ink.zfei.summer.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import ink.zfei.summer.beans.factory.config.BeanDefinition;
 import ink.zfei.summer.core.io.Resource;
 import ink.zfei.summer.core.io.support.PathMatchingResourcePatternResolver;
@@ -99,12 +100,11 @@ public class ClassPathScanningCandidateComponentProvider {
                     beanName = beanName.substring(0, 1).toLowerCase() + beanName.substring(1);
                 }
 
-                Resource resource = null;
-                MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
-                ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
-                sbd.setBeanClassName(className);
+                //根据package扫描的bean，spring使用asm解析class文件，获取class元信息，这样不会提早触发类加载
+                //ScannedGenericBeanDefinition 在spring中是asm的实现，这里用反射实现，和AnnotatedGenericBeanDefinition一模一样
+                ScannedGenericBeanDefinition abd = new ScannedGenericBeanDefinition(aClass);
 
-                candidates.add(sbd);
+                candidates.add(abd);
             }
 
         }
