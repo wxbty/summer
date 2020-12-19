@@ -30,4 +30,8 @@ public class StandardClassMetadata implements ClassMetadata {
     public boolean isAbstract() {
         return false;
     }
+
+    public final Class<?> getIntrospectedClass() {
+        return this.introspectedClass;
+    }
 }

@@ -6,10 +6,9 @@ import java.lang.annotation.Annotation;
 public interface AnnotationFilter {
 
     /**
-     * {@link AnnotationFilter} that matches annotations in the
-     * {@code java.lang} and {@code org.springframework.lang} packages
-     * and their subpackages.
-     * <p>This is the default filter in the {@link MergedAnnotations} model.
+     * 在class或method等注解元素中找注解时，忽略一下包的注解
+     * org.springframework.lang 包含Nullable
+     * java.lang 包含大部分jdk注解
      */
     AnnotationFilter PLAIN = packages("java.lang", "org.springframework.lang");
 

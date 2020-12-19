@@ -467,15 +467,18 @@ abstract class AnnotationsScanner {
     static Annotation[] getDeclaredAnnotations(AnnotatedElement source, boolean defensive) {
         boolean cached = false;
         Annotation[] annotations = declaredAnnotationCache.get(source);
-        if (annotations != null) {
+         if (annotations != null) {
             cached = true;
         }
         else {
+            //返回该元素上直接存在的所有注释
             annotations = source.getDeclaredAnnotations();
             if (annotations.length != 0) {
+                //是否所有注解都不是用户注解
                 boolean allIgnored = true;
                 for (int i = 0; i < annotations.length; i++) {
                     Annotation annotation = annotations[i];
+                    //
                     if (isIgnorable(annotation.annotationType()) ||
                             !AttributeMethods.forAnnotationType(annotation.annotationType()).isValid(annotation)) {
                         annotations[i] = null;
@@ -485,6 +488,7 @@ abstract class AnnotationsScanner {
                     }
                 }
                 annotations = (allIgnored ? NO_ANNOTATIONS : annotations);
+                //Member接口是反射包，描述成员（属性、方法）的接口
                 if (source instanceof Class || source instanceof Member) {
                     declaredAnnotationCache.put(source, annotations);
                     cached = true;

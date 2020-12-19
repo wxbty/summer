@@ -56,7 +56,7 @@ public class AnnotationContextText {
     @Test
     public void importBean() {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfiguation.class);
-        Player player = (Player) ctx.getBean(Player.class);
+        Player player = ctx.getBean(Player.class);
         Assert.assertNotNull(player);
     }
 

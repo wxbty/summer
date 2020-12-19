@@ -13,6 +13,8 @@ import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.core.annotation.Bean;
 import ink.zfei.summer.core.annotation.Configuration;
 import ink.zfei.summer.core.annotation.RootBeanDefination;
+import ink.zfei.summer.core.io.DefaultResourceLoader;
+import ink.zfei.summer.core.io.ResourceLoader;
 import ink.zfei.summer.core.type.classreading.CachingMetadataReaderFactory;
 import ink.zfei.summer.core.type.classreading.MetadataReaderFactory;
 import ink.zfei.summer.util.AnnationUtil;
@@ -24,6 +26,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
     private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory();
     public static ThreadLocal<Map<String, RootBeanDefination>> configBeanInfos = ThreadLocal.withInitial(() -> new HashMap<>());
+    private ConfigurationClassBeanDefinitionReader reader;
+    private ResourceLoader resourceLoader = new DefaultResourceLoader();
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
@@ -52,6 +56,25 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
             return;
         }
 
+        ConfigurationClassParser parser = new ConfigurationClassParser(metadataReaderFactory, registry, resourceLoader);
+        Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
+        Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
+
+        do {
+            parser.parse(candidates);
+            Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
+            configClasses.removeAll(alreadyParsed);
+// Read the model and create bean definitions based on its content
+            if (this.reader == null) {
+                this.reader = new ConfigurationClassBeanDefinitionReader(
+                        registry);
+            }
+
+            this.reader.loadBeanDefinitions(configClasses);
+            alreadyParsed.addAll(configClasses);
+            candidates.clear();
+
+        } while (!candidates.isEmpty());
 
         //1、scan
         //2、this.reader.loadBeanDefinitions(configClasses);
@@ -123,7 +146,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
                     definition.setId(method.getName());
                     definition.setFactoryBeanName(beanName);
                     definition.setFactoryMethodName(method.getName());
-                    registry.registerBeanDefinition(method.getName(),definition);
+                    registry.registerBeanDefinition(method.getName(), definition);
                 }
             }
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
