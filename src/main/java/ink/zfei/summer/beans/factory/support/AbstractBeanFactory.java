@@ -537,6 +537,26 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
         return ResolvableType.NONE;
     }
 
+    //通过bd和singleton 两个map的key，判断是否包含
+    @Override
+    public boolean containsBean(String name) {
+        String beanName = transformedBeanName(name);
+        if (containsSingleton(beanName) || containsBeanDefinition(beanName)) {
+            return (!BeanFactoryUtils.isFactoryDereference(name) || isFactoryBean(name));
+        }
+        // Not found -> check parent.
+        BeanFactory parentBeanFactory = getParentBeanFactory();
+        return (parentBeanFactory != null && parentBeanFactory.containsBean(originalBeanName(name)));
+    }
+
+    protected String originalBeanName(String name) {
+        String beanName = transformedBeanName(name);
+        if (name.startsWith(FACTORY_BEAN_PREFIX)) {
+            beanName = FACTORY_BEAN_PREFIX + beanName;
+        }
+        return beanName;
+    }
+
     @Override
     @Nullable
     public ClassLoader getBeanClassLoader() {

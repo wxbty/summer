@@ -11,6 +11,11 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 在spring框架中需要反射的时候，为了不丢失泛型信息，通常都会使用ResolvableType封装所有的类型
+ * T t;List list;List<?>;T[] a  这些都是一种类型，ResolvableType封装这些
+ * 构造方法私有，只能static获取
+ */
 public class ResolvableType implements Serializable {
 
     /**

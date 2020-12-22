@@ -797,13 +797,9 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
         return StringUtils.toStringArray(result);
     }
 
+    @Override
     public boolean containsBean(String name) {
-        String beanName = transformedBeanName(name);
-        if (containsSingleton(beanName) || containsBeanDefinition(beanName)) {
-            return (!BeanFactoryUtils.isFactoryDereference(name) || isFactoryBean(name));
-        }
-        return false;
-        //todo check parent.
+        return getBeanFactory().containsBean(name);
     }
 
     public boolean containsSingleton(String beanName) {

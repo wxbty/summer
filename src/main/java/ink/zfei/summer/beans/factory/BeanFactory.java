@@ -41,4 +41,6 @@ public interface BeanFactory {
     boolean isTypeMatch(String name, ResolvableType typeToMatch);
 
     boolean isSingleton(String name);
+
+    boolean containsBean(String name);
 }

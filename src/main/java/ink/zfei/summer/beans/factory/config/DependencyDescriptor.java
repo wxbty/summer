@@ -19,25 +19,45 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * 除了注入点，还包含了其他一些信息 :
+ * 依赖是否必要required;
+ * 是否饥饿加载eager;
+ * 嵌套级别 nestingLevel;
+ */
 public class DependencyDescriptor extends InjectionPoint implements Serializable {
 
+    /**
+     * 保存所包装依赖(成员属性或者成员方法的某个参数)所在的声明类，
+     * 其实该信息在 field/methodParameter 中已经隐含
+     */
     private final Class<?> declaringClass;
 
+    /**
+     * 如果封装的是方法，记录方法名称
+     */
     @Nullable
     private String methodName;
 
+    /**
+     * 方法参数类型
+     */
     @Nullable
     private Class<?>[] parameterTypes;
-
+    /**
+     * 如果所包装的是成员方法的某个参数，则这里记录该参数在该函数参数列表中的索引
+     */
     private int parameterIndex;
-
+    /**
+     * 如果所包装的是成员属性，则这里记录该成员属性的名称
+     */
     @Nullable
     private String fieldName;
-
+    //是否必须依赖
     private final boolean required;
-
+    //是否需要饥饿加载
     private final boolean eager;
-
+    // 标识所包装依赖的嵌套级别
     private int nestingLevel = 1;
 
     @Nullable
@@ -304,9 +324,8 @@ public class DependencyDescriptor extends InjectionPoint implements Serializable
     }
 
     /**
-     * Determine the declared (non-generic) type of the wrapped parameter/field.
-     *
-     * @return the declared type (never {@code null})
+     * 如果是field，直接返回类型class，
+     * 如果是method，
      */
     public Class<?> getDependencyType() {
         if (this.field != null) {

@@ -23,4 +23,10 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory {
     void addBeanPostProcessor(BeanPostProcessor beanPostProcessor);
 
     int getBeanPostProcessorCount();
+
+    /**
+     * 将该依赖进行注册，便于在销毁 bean 之前对其进行销毁。
+     * 其实将就是该映射关系保存到两个集合中：dependentBeanMap、dependenciesForBeanMap
+     */
+    void registerDependentBean(String beanName, String dependentBeanName);
 }

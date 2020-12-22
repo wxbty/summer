@@ -259,7 +259,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
 
-
     public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName) {
 
 
@@ -639,7 +638,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
 
-
     protected void autowireByName(
             String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {
 
@@ -717,16 +715,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return this.typeConverter;
     }
 
+    @Override
     public Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName,
                                     @Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) {
 
         descriptor.initParameterNameDiscovery(getParameterNameDiscoverer());
         if (Optional.class == descriptor.getDependencyType()) {
+            //Optional可为空。required=false
             return createOptionalDependency(descriptor, requestingBeanName);
         } else if (ObjectFactory.class == descriptor.getDependencyType() ||
                 ObjectProvider.class == descriptor.getDependencyType()) {
+            //延迟加载
             return new DependencyObjectProvider(descriptor, requestingBeanName);
         } else {
+            //懒加载
             Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
                     descriptor, requestingBeanName);
             if (result == null) {
@@ -739,7 +741,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     private Optional<?> createOptionalDependency(
             DependencyDescriptor descriptor, @Nullable String beanName, final Object... args) {
 
-        DependencyDescriptor descriptorToUse =  new NestedDependencyDescriptor(descriptor) {
+        DependencyDescriptor descriptorToUse = new NestedDependencyDescriptor(descriptor) {
             @Override
             public boolean isRequired() {
                 return false;
@@ -763,20 +765,28 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
     }
 
+    /**
+     * 依赖查找之前，想办法快速查找，如缓存 beanName、@Value 等直接获取注入的值，避免通过类型查找，
+     * 最后才对集合依赖和单一依赖分别进行了处理。实际上，无论是集合依赖还是单一依赖查找都是调用
+     * findAutowireCandidates 方法
+     */
     public Object doResolveDependency(DependencyDescriptor descriptor, @Nullable String beanName,
                                       @Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) {
 
         InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
         try {
+            // 1. 快速查找，根据名称查找。AutowiredAnnotationBeanPostProcessor用到
             Object shortcut = descriptor.resolveShortcut(this);
             if (shortcut != null) {
                 return shortcut;
             }
-
+            // 2. 注入指定值，QualifierAnnotationAutowireCandidateResolver解析@Value会用到
+            // 获取依赖返回类型
             Class<?> type = descriptor.getDependencyType();
             Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
             if (value != null) {
                 if (value instanceof String) {
+                    // 2.1 占位符解析
                     String strVal = resolveEmbeddedValue((String) value);
                     BeanDefinition bd = (beanName != null && containsBean(beanName) ?
                             getBeanDefinition(beanName) : null);
@@ -998,6 +1008,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         //todo check parent.
     }
 
+    @Override
     public void registerDependentBean(String beanName, String dependentBeanName) {
         String canonicalName = beanName;
 
@@ -1267,7 +1278,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             @Nullable String beanName, Class<?> requiredType, DependencyDescriptor descriptor) {
 
         String[] candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
-                (ListableBeanFactory)this, requiredType);
+                (ListableBeanFactory) this, requiredType);
         Map<String, Object> result = new LinkedHashMap<>(candidateNames.length);
         for (Map.Entry<Class<?>, Object> classObjectEntry : this.resolvableDependencies.entrySet()) {
             Class<?> autowiringType = classObjectEntry.getKey();
@@ -1439,5 +1450,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     Log getLogger() {
         return logger;
+    }
+
+
+    @Override
+    public Object resolveBeanByName(String name, DependencyDescriptor descriptor) {
+        InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
+        try {
+            return getBean(name, descriptor.getDependencyType());
+        }
+        finally {
+            ConstructorResolver.setCurrentInjectionPoint(previousInjectionPoint);
+        }
     }
 }
