@@ -72,7 +72,7 @@ public class CommonAnnotationBeanPostProcessor implements MergedBeanDefinitionPo
         try {
             metadata.inject(bean, beanName, pvs);
         } catch (Throwable throwable) {
-            throw new BeanCreationException(beanName, "Injection of resource dependencies failed");
+            throw new BeanCreationException(beanName, "Injection of resource dependencies failed",throwable);
         }
         return pvs;
     }

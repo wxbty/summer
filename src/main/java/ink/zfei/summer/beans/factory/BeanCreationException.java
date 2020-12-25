@@ -8,4 +8,9 @@ public class BeanCreationException extends RuntimeException {
         super("Error creating bean with name '" + beanName + "': " + msg);
         this.beanName = beanName;
     }
+
+    public BeanCreationException(String beanName, String msg, Throwable cause) {
+        this(beanName, msg);
+        initCause(cause);
+    }
 }

@@ -561,7 +561,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             BeanNameAware beanNameAware = (BeanNameAware) bean;
             beanNameAware.setBeanName(beanName);
         }
-
+        if (bean instanceof BeanFactoryAware) {
+            ((BeanFactoryAware) bean).setBeanFactory(AbstractAutowireCapableBeanFactory.this);
+        }
     }
 
     private Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName) {

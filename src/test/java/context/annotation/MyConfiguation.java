@@ -1,6 +1,7 @@
 package context.annotation;
 
 
+import bean.Area;
 import bean.Device;
 import bean.Person;
 import bean.Player;
@@ -31,7 +32,10 @@ public class MyConfiguation {
         return new Player();
     }
 
-
+    @Bean
+    public Area area() {
+        return new Area();
+    }
 
 
 }
