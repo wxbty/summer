@@ -59,6 +59,65 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
         this.parentBeanFactory = parentBeanFactory;
     }
 
+    @Override
+    @Nullable
+    public Class<?> getType(String name) throws NoSuchBeanDefinitionException {
+        return getType(name, true);
+    }
+
+    @Override
+    @Nullable
+    public Class<?> getType(String name, boolean allowFactoryBeanInit) throws NoSuchBeanDefinitionException {
+        String beanName = transformedBeanName(name);
+
+        // Check manually registered singletons.
+        Object beanInstance = getSingleton(beanName, false);
+        if (beanInstance != null && beanInstance.getClass() != NullBean.class) {
+            if (beanInstance instanceof FactoryBean && !BeanFactoryUtils.isFactoryDereference(name)) {
+                return getTypeForFactoryBean((FactoryBean<?>) beanInstance);
+            }
+            else {
+                return beanInstance.getClass();
+            }
+        }
+
+        // No singleton instance found -> check bean definition.
+        BeanFactory parentBeanFactory = getParentBeanFactory();
+        if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
+            // No bean definition found in this factory -> delegate to parent.
+            return parentBeanFactory.getType(originalBeanName(name));
+        }
+
+        GenericBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+
+        // Check decorated bean definition, if any: We assume it'll be easier
+        // to determine the decorated bean's type than the proxy's type.
+        BeanDefinitionHolder dbd = mbd.getDecoratedDefinition();
+        if (dbd != null && !BeanFactoryUtils.isFactoryDereference(name)) {
+            GenericBeanDefinition tbd = getMergedBeanDefinition(dbd.getBeanName(), dbd.getBeanDefinition(), mbd);
+            Class<?> targetClass = predictBeanType(dbd.getBeanName(), tbd);
+            if (targetClass != null && !FactoryBean.class.isAssignableFrom(targetClass)) {
+                return targetClass;
+            }
+        }
+
+        Class<?> beanClass = predictBeanType(beanName, mbd);
+
+        // Check bean class whether we're dealing with a FactoryBean.
+        if (beanClass != null && FactoryBean.class.isAssignableFrom(beanClass)) {
+            if (!BeanFactoryUtils.isFactoryDereference(name)) {
+                // If it's a FactoryBean, we want to look at what it creates, not at the factory class.
+                return getTypeForFactoryBean(beanName, mbd, allowFactoryBeanInit).resolve();
+            }
+            else {
+                return beanClass;
+            }
+        }
+        else {
+            return (!BeanFactoryUtils.isFactoryDereference(name) ? beanClass : null);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
                               @Nullable final Object[] args, boolean typeCheckOnly) {

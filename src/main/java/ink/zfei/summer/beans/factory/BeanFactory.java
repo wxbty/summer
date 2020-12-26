@@ -2,6 +2,7 @@ package ink.zfei.summer.beans.factory;
 
 import ink.zfei.summer.beans.BeanPostProcessor;
 import ink.zfei.summer.core.ResolvableType;
+import ink.zfei.summer.lang.Nullable;
 
 public interface BeanFactory {
 
@@ -29,6 +30,9 @@ public interface BeanFactory {
     String[] getAliases(String name);
 
     Class<?> getType(String name);
+
+    @Nullable
+    Class<?> getType(String name, boolean allowFactoryBeanInit);
 
     /**
      * 判断名称是name的bean是否是匹配指定类型

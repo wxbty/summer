@@ -123,6 +123,28 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return bean;
     }
 
+    @Override
+    @Nullable
+    protected Class<?> predictBeanType(String beanName, GenericBeanDefinition mbd, Class<?>... typesToMatch) {
+        Class<?> targetType = determineTargetType(beanName, mbd, typesToMatch);
+        // Apply SmartInstantiationAwareBeanPostProcessors to predict the
+        // eventual type after a before-instantiation shortcut.
+        if (targetType != null  && hasInstantiationAwareBeanPostProcessors()) {
+            boolean matchingOnlyFactoryBean = typesToMatch.length == 1 && typesToMatch[0] == FactoryBean.class;
+            for (BeanPostProcessor bp : getBeanPostProcessors()) {
+                if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
+                    SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
+                    Class<?> predicted = ibp.predictBeanType(targetType, beanName);
+                    if (predicted != null &&
+                            (!matchingOnlyFactoryBean || FactoryBean.class.isAssignableFrom(predicted))) {
+                        return predicted;
+                    }
+                }
+            }
+        }
+        return targetType;
+    }
+
     protected Class<?> determineTargetType(String beanName, GenericBeanDefinition mbd, Class<?>... typesToMatch) {
         Class<?> targetType = mbd.getTargetType();
         if (targetType == null) {
@@ -1263,6 +1285,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
     }
 
+    @Override
     public TypeConverter getTypeConverter() {
         TypeConverter customConverter = getCustomTypeConverter();
         if (customConverter != null) {

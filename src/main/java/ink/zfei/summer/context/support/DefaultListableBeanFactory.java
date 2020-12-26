@@ -81,10 +81,6 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         return new String[0];
     }
 
-    @Override
-    public Class<?> getType(String name) {
-        return null;
-    }
 
     @Nullable
     private <T> T resolveBean(ResolvableType requiredType, @Nullable Object[] args, boolean nonUniqueAsNull) {

@@ -42,7 +42,14 @@ public class AnnotationContextText {
     public void resource() {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfiguation.class);
         Player player = (Player) ctx.getBean("player");
-        player.name();
+        player.sourceArea();
+    }
+
+    @Test
+    public void autowired() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(MyConfiguation.class);
+        Player player = (Player) ctx.getBean("player");
+        player.autoPerson();
     }
 
     @Test

@@ -1409,4 +1409,11 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 
         return getBeanFactory().findAnnotationOnBean(beanName, annotationType);
     }
+
+    @Override
+    @Nullable
+    public Class<?> getType(String name, boolean allowFactoryBeanInit) {
+        return getBeanFactory().getType(name, allowFactoryBeanInit);
+    }
+
 }

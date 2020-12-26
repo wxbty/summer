@@ -1,6 +1,7 @@
 package ink.zfei.summer.beans.factory.config;
 
 import ink.zfei.summer.beans.BeanPostProcessor;
+import ink.zfei.summer.beans.TypeConverter;
 import ink.zfei.summer.beans.factory.HierarchicalBeanFactory;
 
 /**
@@ -29,4 +30,6 @@ public interface ConfigurableBeanFactory extends HierarchicalBeanFactory {
      * 其实将就是该映射关系保存到两个集合中：dependentBeanMap、dependenciesForBeanMap
      */
     void registerDependentBean(String beanName, String dependentBeanName);
+
+    TypeConverter getTypeConverter();
 }
