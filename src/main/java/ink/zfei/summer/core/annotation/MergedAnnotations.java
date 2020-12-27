@@ -306,6 +306,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     enum SearchStrategy {
 
         /**
+         * 只查询当前元素，不包含父类和接口的注解
          * Find only directly declared annotations, without considering
          * {@link Inherited @Inherited} annotations and without searching
          * superclasses or implemented interfaces.

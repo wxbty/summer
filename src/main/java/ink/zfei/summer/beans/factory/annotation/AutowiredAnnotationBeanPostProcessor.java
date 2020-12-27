@@ -126,7 +126,14 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
         return (candidateConstructors.length > 0 ? candidateConstructors : null);
     }
 
+    /**
+     * AccessibleObject是field、method、class等带注解元素的基类，提供了Accessible能力
+     *
+     * @param ao
+     * @return
+     */
     private MergedAnnotation<?> findAutowiredAnnotation(AccessibleObject ao) {
+        //获取注解元素的所有注解信息（封装成方便获取注解属性的MergedAnnotations对象）
         MergedAnnotations annotations = MergedAnnotations.from(ao);
         for (Class<? extends Annotation> type : this.autowiredAnnotationTypes) {
             MergedAnnotation<?> annotation = annotations.get(type);
@@ -143,6 +150,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
                 ann.asMap(mergedAnnotation -> new AnnotationAttributes(mergedAnnotation.getType())));
     }
 
+    /**
+     * @Autowired注解的属性key是否带了required，且value=true
+     */
     protected boolean determineRequiredStatus(AnnotationAttributes ann) {
         return (!ann.containsKey(this.requiredParameterName) ||
                 this.requiredParameterValue == ann.getBoolean(this.requiredParameterName));
@@ -153,6 +163,13 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
         return buildAutowiringMetadata(clazz);
     }
 
+    /**
+     * 遍历clazz所有field，获取所有注解，匹配@Autowired，如匹配封装成InjectedElement集合
+     * 最后分装成InjectionMetadata对象返回
+     *
+     * @param clazz
+     * @return
+     */
     private InjectionMetadata buildAutowiringMetadata(final Class<?> clazz) {
         if (!AnnotationUtils.isCandidateClass(clazz, this.autowiredAnnotationTypes)) {
             return InjectionMetadata.EMPTY;
@@ -164,7 +181,11 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
         do {
             final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
 
+            /**
+             * 循环class所有field
+             */
             ReflectionUtils.doWithLocalFields(targetClass, field -> {
+                //MergedAnnotation是field对应Autowired注解的封装对象，可以方便获取注解属性，比如下面的required
                 MergedAnnotation<?> ann = findAutowiredAnnotation(field);
                 if (ann != null) {
                     if (Modifier.isStatic(field.getModifiers())) {
@@ -173,6 +194,7 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
                         }
                         return;
                     }
+                    //获取Autowired注解required属性值
                     boolean required = determineRequiredStatus(ann);
                     currElements.add(new AutowiredFieldElement(field, required));
                 }
@@ -192,8 +214,11 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
 
         private final boolean required;
 
-//        private volatile boolean cached = false;
+        private volatile boolean cached = false;
 
+        /**
+         * 缓存有两种，注入的对象或依赖封装对象
+         */
         @Nullable
         private volatile Object cachedFieldValue;
 
@@ -207,33 +232,49 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
             Field field = (Field) this.member;
             Object value;
 
-            DependencyDescriptor desc = new DependencyDescriptor(field, this.required);
-            desc.setContainingClass(bean.getClass());
-            Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
-            Assert.state(beanFactory != null, "No BeanFactory available");
-            TypeConverter typeConverter = beanFactory.getTypeConverter();
-            value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
+            if (this.cached) {
+                //如果有缓存（已经解析过），根据缓存使用beanName映射注入对象值
+                value = resolvedCachedArgument(beanName, this.cachedFieldValue);
+            } else {
+                DependencyDescriptor desc = new DependencyDescriptor(field, this.required);
+                desc.setContainingClass(bean.getClass());
+                Set<String> autowiredBeanNames = new LinkedHashSet<>(1);
+                Assert.state(beanFactory != null, "No BeanFactory available");
+                TypeConverter typeConverter = beanFactory.getTypeConverter();
+                value = beanFactory.resolveDependency(desc, beanName, autowiredBeanNames, typeConverter);
 
-            synchronized (this) {
-                if (value != null || this.required) {
-                    this.cachedFieldValue = desc;
-                    // registerDependentBeans(beanName, autowiredBeanNames); 忽略注册依赖关系
-                    if (autowiredBeanNames.size() == 1) {
-                        String autowiredBeanName = autowiredBeanNames.iterator().next();
-                        if (beanFactory.containsBean(autowiredBeanName) &&
-                                beanFactory.isTypeMatch(autowiredBeanName, field.getType())) {
-                            this.cachedFieldValue = new ShortcutDependencyDescriptor(
-                                    desc, autowiredBeanName, field.getType());
+                synchronized (this) {
+                    if (value != null || this.required) {
+                        this.cachedFieldValue = desc;
+                        // registerDependentBeans(beanName, autowiredBeanNames); 忽略注册依赖关系
+                        if (autowiredBeanNames.size() == 1) {
+                            String autowiredBeanName = autowiredBeanNames.iterator().next();
+                            if (beanFactory.containsBean(autowiredBeanName) &&
+                                    beanFactory.isTypeMatch(autowiredBeanName, field.getType())) {
+                                this.cachedFieldValue = new ShortcutDependencyDescriptor(
+                                        desc, autowiredBeanName, field.getType());
+                            }
                         }
+                    } else {
+                        this.cachedFieldValue = null;
                     }
-                } else {
-                    this.cachedFieldValue = null;
                 }
             }
             if (value != null) {
                 ReflectionUtils.makeAccessible(field);
                 field.set(bean, value);
             }
+        }
+    }
+
+    @Nullable
+    private Object resolvedCachedArgument(@Nullable String beanName, @Nullable Object cachedArgument) {
+        if (cachedArgument instanceof DependencyDescriptor) {
+            DependencyDescriptor descriptor = (DependencyDescriptor) cachedArgument;
+            Assert.state(this.beanFactory != null, "No BeanFactory available");
+            return this.beanFactory.resolveDependency(descriptor, beanName, null, null);
+        } else {
+            return cachedArgument;
         }
     }
 
@@ -271,11 +312,9 @@ public class AutowiredAnnotationBeanPostProcessor implements SmartInstantiationA
         InjectionMetadata metadata = findAutowiringMetadata(beanName, bean.getClass(), pvs);
         try {
             metadata.inject(bean, beanName, pvs);
-        }
-        catch (BeanCreationException ex) {
+        } catch (BeanCreationException ex) {
             throw ex;
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
             throw new BeanCreationException(beanName, "Injection of autowired dependencies failed", ex);
         }
         return pvs;

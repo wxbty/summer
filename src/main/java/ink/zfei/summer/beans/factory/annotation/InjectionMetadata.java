@@ -44,7 +44,7 @@ public class InjectionMetadata {
     /**
      * 依赖注入的filed或者set方法的封装。
      * 不同注解修饰即不同子类。
-     * filed或者method是成员遍历。
+     * filed或者method是成员变量。
      */
     public abstract static class InjectedElement {
 
