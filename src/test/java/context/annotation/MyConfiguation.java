@@ -1,17 +1,14 @@
 package context.annotation;
 
 
-import bean.Area;
-import bean.Device;
-import bean.Person;
-import bean.Player;
+import bean.*;
 import bean.configuration.MyImportSelect;
 import ink.zfei.summer.annation.Import;
 import ink.zfei.summer.core.annotation.Bean;
 import ink.zfei.summer.core.annotation.Configuration;
 
 @Configuration
-@Import({Player.class, MyImportSelect.class})
+@Import({Game.class, MyImportSelect.class})
 public class MyConfiguation {
 
 

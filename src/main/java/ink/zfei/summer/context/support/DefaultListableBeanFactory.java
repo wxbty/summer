@@ -114,6 +114,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         if (candidateNames.length > 1) {
             List<String> autowireCandidates = new ArrayList<>(candidateNames.length);
             for (String beanName : candidateNames) {
+                //isAutowireCandidate()默认是true
+                // 什么场景下会出现：没有定义该BeanDefinition，但根据类型可以查找到该beanName?
                 if (!containsBeanDefinition(beanName) || getBeanDefinition(beanName).isAutowireCandidate()) {
                     autowireCandidates.add(beanName);
                 }
@@ -335,7 +337,13 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
     @Override
     public String[] getBeanNamesForType(ResolvableType type, boolean includeNonSingletons, boolean allowEagerInit) {
-        return new String[0];
+        Class<?> resolved = type.resolve();
+        if (resolved != null && !type.hasGenerics()) {
+            return getBeanNamesForType(resolved, includeNonSingletons, allowEagerInit);
+        }
+        else {
+            return doGetBeanNamesForType(type, includeNonSingletons, allowEagerInit);
+        }
     }
 
     @Override

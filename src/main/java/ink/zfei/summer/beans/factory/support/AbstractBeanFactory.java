@@ -193,7 +193,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
      * 也可能是BeanFactory，所以transformedBeanName的操作的目的就是取到真正的bean的名字，以便开始后续的流程。
      * */
     protected String transformedBeanName(String name) {
-        return name;
+        return BeanFactoryUtils.transformedBeanName(name);
     }
 
     private boolean isPrototypeCurrentlyInCreation(String beanName) {
