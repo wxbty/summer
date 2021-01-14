@@ -24,9 +24,11 @@ interface AnnotationsProcessor<C, R> {
     }
 
     /**
+     * 在处理注解集合时（如判断注解是否存在）的回调函数
+     * 可能按返回结果提前中断
      * Called when an array of annotations can be processed. This method may
      * return a {@code non-null} result to short-circuit any further processing.
-     * @param context the context information relevant to the processor
+     * @param context 注解处理上下文
      * @param aggregateIndex the aggregate index of the provided annotations
      * @param source the original source of the annotations, if known
      * @param annotations the annotations to process (this array may contain

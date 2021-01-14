@@ -8,39 +8,72 @@ import ink.zfei.summer.lang.Nullable;
 import ink.zfei.summer.util.ObjectUtils;
 import ink.zfei.summer.util.ReflectionUtils;
 
+/**
+ * 提供一个注解在root注解上下文之间的映射信息
+ * 该实例AnnotationTypeMappings创建的，创建的过程根据注解的注释体系从下往上进行
+ * 上层实例的source指向下层实例，所有实例的root指向最下层的实例
+ */
 final class AnnotationTypeMapping {
 
     private static final MirrorSet[] EMPTY_MIRROR_SETS = new MirrorSet[0];
 
+    /**
+     * 假设当前AnnotationTypeMapping实例为MA，映射@A注解
+     */
 
+    /**
+     * 上层注解，例如：@A上注解类@R，则MA的source指向了@R对应的AnnotationTypeMapping实例
+     */
     @Nullable
     private final AnnotationTypeMapping source;
 
+    /**
+     * 根注解
+     */
     private final AnnotationTypeMapping root;
 
+    /**
+     * 离root的距离
+     */
     private final int distance;
 
+    /**
+     * 对应的注解类型，此处为A
+     */
     private final Class<? extends Annotation> annotationType;
 
+    /**
+     * 涉及到的注解类型列表，包含source和当前注解
+     */
     private final List<Class<? extends Annotation>> metaTypes;
 
+    /**
+     * 当前注解实例
+     */
     @Nullable
     private final Annotation annotation;
 
+    /**
+     * 注解的属性列表包装类
+     */
     private final AttributeMethods attributes;
 
+    /**
+     * MirrorSet集合
+     * 一个MirrorSet代表注解属性别名和另一层级对应属性的集合
+     */
     private final MirrorSets mirrorSets;
-
+    //每个属性在root中对应的同名属性的索引。
     private final int[] aliasMappings;
-
+    //方便访问属性的映射消息，如果在root中有别名，则优先获取
     private final int[] conventionMappings;
-
+    //与annotationValueSource是相匹配的，定义每个属性最终从哪个注解的哪个属性获取值
     private final int[] annotationValueMappings;
 
     private final AnnotationTypeMapping[] annotationValueSource;
 
     private final boolean synthesizable;
-
+    //本注解声明的所有属性方法的所有别名集合。最后用于注解定义，然后会清空
     private final Set<Method> claimedAliases = new HashSet<>();
 
 
@@ -62,6 +95,7 @@ final class AnnotationTypeMapping {
         this.annotationValueMappings = filledIntArray(this.attributes.size());
         this.annotationValueSource = new AnnotationTypeMapping[this.attributes.size()];
 //        processAliases();
+        //生成从root访问属性的方便属性方法信息
         addConventionMappings();
         addConventionAnnotationValues();
         this.synthesizable = computeSynthesizableFlag();
@@ -106,15 +140,20 @@ final class AnnotationTypeMapping {
             return;
         }
         AttributeMethods rootAttributes = this.root.getAttributes();
+        //此时，元素值全为-1
         int[] mappings = this.conventionMappings;
         for (int i = 0; i < mappings.length; i++) {
             String name = this.attributes.get(i).getName();
             MirrorSet mirrors = getMirrorSets().getAssigned(i);
+            //root中是否存在同名属性
             int mapped = rootAttributes.indexOf(name);
+            //root中存在同名属性，且属性名不为value
             if (!MergedAnnotation.VALUE.equals(name) && mapped != -1) {
+                //存储root中的属性方法value
                 mappings[i] = mapped;
                 if (mirrors != null) {
                     for (int j = 0; j < mirrors.size(); j++) {
+                        //同一属性的所有别名，设置成一样的root属性index
                         mappings[mirrors.getAttributeIndex(j)] = mapped;
                     }
                 }
@@ -137,7 +176,7 @@ final class AnnotationTypeMapping {
             }
         }
     }
-
+    //是更好的注解值获取属性方法。value属性优先，distance较小的优先
     private boolean isBetterConventionAnnotationValue(int index, boolean isValueAttribute,
                                                       AnnotationTypeMapping mapping) {
 
@@ -433,20 +472,24 @@ final class AnnotationTypeMapping {
     class MirrorSets {
 
         private MirrorSet[] mirrorSets;
-
+        //每个属性方法引用的MirrorSet的index。未引用MirrorSet设置为-1
         private final MirrorSet[] assigned;
 
         MirrorSets() {
             this.assigned = new MirrorSet[attributes.size()];
             this.mirrorSets = EMPTY_MIRROR_SETS;
         }
-
+        //对每个mapping，此方法会调用多次。解析的最终属性是同一个属性方法的，作为一个镜像组。
+        //aliases：每个属性方法的所有层级的别名
         void updateFrom(Collection<Method> aliases) {
             MirrorSet mirrorSet = null;
+            //别名属性的个数
             int size = 0;
+            //上一个别名属性的下标
             int last = -1;
             for (int i = 0; i < attributes.size(); i++) {
                 Method attribute = attributes.get(i);
+                //本注解定义的属性是其他层级属性的别名
                 if (aliases.contains(attribute)) {
                     size++;
                     if (size > 1) {
@@ -480,6 +523,11 @@ final class AnnotationTypeMapping {
             return this.assigned[attributeIndex];
         }
 
+        /**
+         * 返回本mapping每个属性最终取值的属性方法的序号数组
+         * source：注解
+         * annotation：注解实例
+         */
         int[] resolve(@Nullable Object source, @Nullable Object annotation, ValueExtractor valueExtractor) {
             int[] result = new int[attributes.size()];
             for (int i = 0; i < result.length; i++) {
@@ -497,14 +545,22 @@ final class AnnotationTypeMapping {
 
 
         /**
-         * A single set of mirror attributes.
+         * 用于本注解里属性最终解析为同一个属性方法的信息集合
+         * 如果没有为同一个属性的别名（@Alisfor），则不会产生MirrorSet实例
+         * 解析为同一个属性方法的一组镜像产生一个MirrorSet实例
          */
         class MirrorSet {
 
+            //此MirrorSet被引用里多少次
             private int size;
-
+            /**
+             * 表示MirrorSet每次被引用属性的序号。
+             * 注解镜像属性方法索引数组，size为属性方法数量。数组下标代表找到的第n-1个镜像
+             * 方法，值为镜像方法的索引
+             * 例如方法3和4互相镜像，则该数组为0：3，1：4，后续元素值都为-1
+             */
             private final int[] indexes = new int[attributes.size()];
-
+            //更新状态，根据MirrorSets.assigned
             void update() {
                 this.size = 0;
                 Arrays.fill(this.indexes, -1);
@@ -515,21 +571,24 @@ final class AnnotationTypeMapping {
                     }
                 }
             }
-
+            //返回第一个不是方法默认值的下标
             <A> int resolve(@Nullable Object source, @Nullable A annotation, ValueExtractor valueExtractor) {
                 int result = -1;
                 Object lastValue = null;
                 for (int i = 0; i < this.size; i++) {
                     Method attribute = attributes.get(this.indexes[i]);
+                    //获取到属性的值
                     Object value = valueExtractor.extract(attribute, annotation);
                     boolean isDefaultValue = (value == null ||
                             isEquivalentToDefaultValue(attribute, value, valueExtractor));
+                    //如果属性值不是默认值，并且与上一个不相等，则继续判断
                     if (isDefaultValue || ObjectUtils.nullSafeEquals(lastValue, value)) {
                         if (result == -1) {
                             result = this.indexes[i];
                         }
                         continue;
                     }
+                    //上一个值不为null，并且与上一个值不相等，则抛出异常
                     if (lastValue != null && !ObjectUtils.nullSafeEquals(lastValue, value)) {
                         String on = (source != null) ? " declared on " + source : "";
                         throw new AnnotationConfigurationException(String.format(
@@ -541,6 +600,7 @@ final class AnnotationTypeMapping {
                                 ObjectUtils.nullSafeToString(lastValue),
                                 ObjectUtils.nullSafeToString(value)));
                     }
+                    //更新result和lastValue
                     result = this.indexes[i];
                     lastValue = value;
                 }

@@ -125,6 +125,11 @@ public abstract class RepeatableContainers {
             super(null);
         }
 
+        /**
+         * 查找可重复注解
+         * 1、获取@Repeatable注解
+         * 2、反射调用@Repeatable注解value方法，把多个value合并成一个value数组
+         */
         @Override
         @Nullable
         Annotation[] findRepeatedAnnotations(Annotation annotation) {

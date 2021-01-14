@@ -89,18 +89,14 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 
         prepareBeanFactory(beanFactory);
 
-        //1、从外界获取bean定义信息
-//        try {
-//            beanDefinitionMap.putAll(loadBeanDefination());
-//        } catch (IOException ex) {
-//            throw new RuntimeException("I/O error parsing bean definition source for " + getDisplayName(), ex);
-//        }
-//        beanDefinitionNames = new ArrayList<>(beanDefinitionMap.keySet());
+        postProcessBeanFactory(beanFactory);
 
         //Invoke factory processors registered as beans in the context.
         invokeBeanFactoryPostProcessors(beanFactory);
 
         registerBeanPostProcessors(beanFactory);
+
+        onRefresh();
 
         finishBeanFactoryInitialization();
 
@@ -109,6 +105,13 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
         RefreshApplicationEvent event = new RefreshApplicationEvent();
         publishEvent(event);
 
+    }
+
+    protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+    }
+
+    protected void onRefresh() {
+        // For subclasses: do nothing by default.
     }
 
     public String[] getAliases(String name) {

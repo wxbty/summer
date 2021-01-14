@@ -6,6 +6,10 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 广度递归，快速搜索root注解
+ * 缓存
+ */
 final class AnnotationTypeMappings {
 
     private static final Map<AnnotationFilter, Cache> standardRepeatablesCache = new ConcurrentHashMap<>();

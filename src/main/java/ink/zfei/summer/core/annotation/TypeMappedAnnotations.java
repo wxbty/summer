@@ -292,6 +292,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
             this.directOnly = directOnly;
         }
 
+        //判断是否存在指定注解
         @Override
         @Nullable
         public Boolean doWithAnnotations(Object requiredType, int aggregateIndex,
@@ -314,6 +315,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
                             }
                         }
                         if (!this.directOnly) {
+                            //对指定注解追根溯源，返回层级的注解映射集合
                             AnnotationTypeMappings mappings = AnnotationTypeMappings.forAnnotationType(type);
                             for (int i = 0; i < mappings.size(); i++) {
                                 AnnotationTypeMapping mapping = mappings.get(i);
