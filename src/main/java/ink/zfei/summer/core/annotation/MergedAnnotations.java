@@ -19,6 +19,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * Determine if the specified annotation is either directly present or
      * meta-present.
      * <p>Equivalent to calling {@code get(annotationType).isPresent()}.
+     *
      * @param annotationType the annotation type to check
      * @return {@code true} if the annotation is present
      */
@@ -28,8 +29,9 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * Determine if the specified annotation is either directly present or
      * meta-present.
      * <p>Equivalent to calling {@code get(annotationType).isPresent()}.
+     *
      * @param annotationType the fully qualified class name of the annotation type
-     * to check
+     *                       to check
      * @return {@code true} if the annotation is present
      */
     boolean isPresent(String annotationType);
@@ -37,6 +39,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Determine if the specified annotation is directly present.
      * <p>Equivalent to calling {@code get(annotationType).isDirectlyPresent()}.
+     *
      * @param annotationType the annotation type to check
      * @return {@code true} if the annotation is directly present
      */
@@ -45,8 +48,9 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Determine if the specified annotation is directly present.
      * <p>Equivalent to calling {@code get(annotationType).isDirectlyPresent()}.
+     *
      * @param annotationType the fully qualified class name of the annotation type
-     * to check
+     *                       to check
      * @return {@code true} if the annotation is directly present
      */
     boolean isDirectlyPresent(String annotationType);
@@ -54,6 +58,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * annotation or meta-annotation of the specified type, or
      * {@link MergedAnnotation#missing()} if none is present.
+     *
      * @param annotationType the annotation type to get
      * @return a {@link MergedAnnotation} instance
      */
@@ -62,9 +67,10 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * annotation or meta-annotation of the specified type, or
      * {@link MergedAnnotation#missing()} if none is present.
+     *
      * @param annotationType the annotation type to get
-     * @param predicate a predicate that must match, or {@code null} if only
-     * type matching is required
+     * @param predicate      a predicate that must match, or {@code null} if only
+     *                       type matching is required
      * @return a {@link MergedAnnotation} instance
      */
     <A extends Annotation> MergedAnnotation<A> get(Class<A> annotationType,
@@ -73,11 +79,12 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Get a matching annotation or meta-annotation of the specified type, or
      * {@link MergedAnnotation#missing()} if none is present.
+     *
      * @param annotationType the annotation type to get
-     * @param predicate a predicate that must match, or {@code null} if only
-     * type matching is required
-     * @param selector a selector used to choose the most appropriate annotation
-     * within an aggregate, or {@code null} to select the
+     * @param predicate      a predicate that must match, or {@code null} if only
+     *                       type matching is required
+     * @param selector       a selector used to choose the most appropriate annotation
+     *                       within an aggregate, or {@code null} to select the
      * @return a {@link MergedAnnotation} instance
      */
     <A extends Annotation> MergedAnnotation<A> get(Class<A> annotationType,
@@ -87,8 +94,9 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * annotation or meta-annotation of the specified type, or
      * {@link MergedAnnotation#missing()} if none is present.
+     *
      * @param annotationType the fully qualified class name of the annotation type
-     * to get
+     *                       to get
      * @return a {@link MergedAnnotation} instance
      */
     <A extends Annotation> MergedAnnotation<A> get(String annotationType);
@@ -96,10 +104,11 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * annotation or meta-annotation of the specified type, or
      * {@link MergedAnnotation#missing()} if none is present.
+     *
      * @param annotationType the fully qualified class name of the annotation type
-     * to get
-     * @param predicate a predicate that must match, or {@code null} if only
-     * type matching is required
+     *                       to get
+     * @param predicate      a predicate that must match, or {@code null} if only
+     *                       type matching is required
      * @return a {@link MergedAnnotation} instance
      */
     <A extends Annotation> MergedAnnotation<A> get(String annotationType,
@@ -108,12 +117,13 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Get a matching annotation or meta-annotation of the specified type, or
      * {@link MergedAnnotation#missing()} if none is present.
+     *
      * @param annotationType the fully qualified class name of the annotation type
-     * to get
-     * @param predicate a predicate that must match, or {@code null} if only
-     * type matching is required
-     * @param selector a selector used to choose the most appropriate annotation
-     * within an aggregate, or {@code null} to select the
+     *                       to get
+     * @param predicate      a predicate that must match, or {@code null} if only
+     *                       type matching is required
+     * @param selector       a selector used to choose the most appropriate annotation
+     *                       within an aggregate, or {@code null} to select the
      * @return a {@link MergedAnnotation} instance
      */
     <A extends Annotation> MergedAnnotation<A> get(String annotationType,
@@ -124,6 +134,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * Stream all annotations and meta-annotations that match the specified
      * type. The resulting stream follows the same ordering rules as
      * {@link #stream()}.
+     *
      * @param annotationType the annotation type to match
      * @return a stream of matching annotations
      */
@@ -133,8 +144,9 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * Stream all annotations and meta-annotations that match the specified
      * type. The resulting stream follows the same ordering rules as
      * {@link #stream()}.
+     *
      * @param annotationType the fully qualified class name of the annotation type
-     * to match
+     *                       to match
      * @return a stream of matching annotations
      */
     <A extends Annotation> Stream<MergedAnnotation<A>> stream(String annotationType);
@@ -146,6 +158,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * by the annotation distance (with the closest annotations first). This ordering
      * means that, for most use-cases, the most suitable annotations appear
      * earliest in the stream.
+     *
      * @return a stream of annotations
      */
     Stream<MergedAnnotation<Annotation>> stream();
@@ -158,6 +171,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * want to include those as well you should use
      * {@link #from(AnnotatedElement, SearchStrategy)} with an appropriate
      * {@link SearchStrategy}.
+     *
      * @param element the source element
      * @return a {@link MergedAnnotations} instance containing the element's
      * annotations
@@ -170,7 +184,8 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * Create a new {@link MergedAnnotations} instance containing all
      * annotations and meta-annotations from the specified element and,
      * depending on the {@link SearchStrategy}, related inherited elements.
-     * @param element the source element
+     *
+     * @param element        the source element
      * @param searchStrategy the search strategy to use
      * @return a {@link MergedAnnotations} instance containing the merged
      * element annotations
@@ -183,10 +198,11 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * Create a new {@link MergedAnnotations} instance containing all
      * annotations and meta-annotations from the specified element and,
      * depending on the {@link SearchStrategy}, related inherited elements.
-     * @param element the source element
-     * @param searchStrategy the search strategy to use
+     *
+     * @param element              the source element
+     * @param searchStrategy       the search strategy to use
      * @param repeatableContainers the repeatable containers that may be used by
-     * the element annotations or the meta-annotations
+     *                             the element annotations or the meta-annotations
      * @return a {@link MergedAnnotations} instance containing the merged
      * element annotations
      */
@@ -200,12 +216,13 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * Create a new {@link MergedAnnotations} instance containing all
      * annotations and meta-annotations from the specified element and,
      * depending on the {@link SearchStrategy}, related inherited elements.
-     * @param element the source element
-     * @param searchStrategy the search strategy to use
+     *
+     * @param element              the source element
+     * @param searchStrategy       the search strategy to use
      * @param repeatableContainers the repeatable containers that may be used by
-     * the element annotations or the meta-annotations
-     * @param annotationFilter an annotation filter used to restrict the
-     * annotations considered
+     *                             the element annotations or the meta-annotations
+     * @param annotationFilter     an annotation filter used to restrict the
+     *                             annotations considered
      * @return a {@link MergedAnnotations} instance containing the merged
      * element annotations
      */
@@ -218,6 +235,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Create a new {@link MergedAnnotations} instance from the specified
      * annotations.
+     *
      * @param annotations the annotations to include
      * @return a {@link MergedAnnotations} instance containing the annotations
      * @see #from(Object, Annotation...)
@@ -229,9 +247,10 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Create a new {@link MergedAnnotations} instance from the specified
      * annotations.
-     * @param source the source for the annotations. This source is used only
-     * for information and logging. It does not need to <em>actually</em>
-     * contain the specified annotations, and it will not be searched.
+     *
+     * @param source      the source for the annotations. This source is used only
+     *                    for information and logging. It does not need to <em>actually</em>
+     *                    contain the specified annotations, and it will not be searched.
      * @param annotations the annotations to include
      * @return a {@link MergedAnnotations} instance containing the annotations
      * @see #from(Annotation...)
@@ -244,12 +263,13 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Create a new {@link MergedAnnotations} instance from the specified
      * annotations.
-     * @param source the source for the annotations. This source is used only
-     * for information and logging. It does not need to <em>actually</em>
-     * contain the specified annotations, and it will not be searched.
-     * @param annotations the annotations to include
+     *
+     * @param source               the source for the annotations. This source is used only
+     *                             for information and logging. It does not need to <em>actually</em>
+     *                             contain the specified annotations, and it will not be searched.
+     * @param annotations          the annotations to include
      * @param repeatableContainers the repeatable containers that may be used by
-     * meta-annotations
+     *                             meta-annotations
      * @return a {@link MergedAnnotations} instance containing the annotations
      */
     static MergedAnnotations from(Object source, Annotation[] annotations, RepeatableContainers repeatableContainers) {
@@ -259,14 +279,15 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     /**
      * Create a new {@link MergedAnnotations} instance from the specified
      * annotations.
-     * @param source the source for the annotations. This source is used only
-     * for information and logging. It does not need to <em>actually</em>
-     * contain the specified annotations, and it will not be searched.
-     * @param annotations the annotations to include
+     *
+     * @param source               the source for the annotations. This source is used only
+     *                             for information and logging. It does not need to <em>actually</em>
+     *                             contain the specified annotations, and it will not be searched.
+     * @param annotations          the annotations to include
      * @param repeatableContainers the repeatable containers that may be used by
-     * meta-annotations
-     * @param annotationFilter an annotation filter used to restrict the
-     * annotations considered
+     *                             meta-annotations
+     * @param annotationFilter     an annotation filter used to restrict the
+     *                             annotations considered
      * @return a {@link MergedAnnotations} instance containing the annotations
      */
     static MergedAnnotations from(Object source, Annotation[] annotations,
@@ -287,6 +308,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
      * The resulting {@link MergedAnnotations} instance will contain both the
      * specified annotations, and any meta-annotations that can be read using
      * reflection.
+     *
      * @param annotations the annotations to include
      * @return a {@link MergedAnnotations} instance containing the annotations
      * @see MergedAnnotation#of(ClassLoader, Object, Class, java.util.Map)
@@ -306,7 +328,7 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
     enum SearchStrategy {
 
         /**
-         * 只查询当前元素，不包含父类和接口的注解
+         * 仅查找直接声明的注释，而无需考虑 @Inherited 注释，也无需搜索父类或已实现的接口
          * Find only directly declared annotations, without considering
          * {@link Inherited @Inherited} annotations and without searching
          * superclasses or implemented interfaces.
@@ -314,6 +336,10 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
         DIRECT,
 
         /**
+         * 查找所有直接声明的注解以及任何 @Inherited 父类注解。
+         * 该策略仅在与 Class 类型一起使用时才真正有用，
+         * 因为所有其他带注解的元素都将忽略 @Inherited 注释。
+         * 此策略不搜索已实现的接口。
          * Find all directly declared annotations as well as any
          * {@link Inherited @Inherited} superclass annotations. This strategy
          * is only really useful when used with {@link Class} types since the
@@ -324,6 +350,8 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
         INHERITED_ANNOTATIONS,
 
         /**
+         * 查找所有直接声明的注解和超类注解。 该策略与 INHERITED_ANNOTATIONS 相似，
+         * 不同之处在于注解不需要使用 @Inherited 进行元注解。 此策略不搜索已实现的接口。
          * Find all directly declared and superclass annotations. This strategy
          * is similar to {@link #INHERITED_ANNOTATIONS} except the annotations
          * do not need to be meta-annotated with {@link Inherited @Inherited}.
@@ -332,6 +360,8 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
         SUPERCLASS,
 
         /**
+         * 对整个类型层次进行完整搜索，包括超类和已实现的接口。
+         * 超类注解不需要使用 @Inherited 进行元注解
          * Perform a full search of the entire type hierarchy, including
          * superclasses and implemented interfaces. Superclass annotations do
          * not need to be meta-annotated with {@link Inherited @Inherited}.
@@ -339,6 +369,10 @@ public interface MergedAnnotations extends Iterable<MergedAnnotation<Annotation>
         TYPE_HIERARCHY,
 
         /**
+         * 对来源和所有封闭的类执行整个类型层次结构的完整搜索。
+         * 该策略与 TYPE_HIERARCHY 相似，不同之处在于还搜索了封闭类。
+         * 超类注解不需要使用 @Inherited 进行元注解。
+         * 搜索方法源时，此策略与 TYPE_HIERARCHY 相同。
          * Perform a full search of the entire type hierarchy on the source
          * <em>and</em> any enclosing classes. This strategy is similar to
          * {@link #TYPE_HIERARCHY} except that {@linkplain Class#getEnclosingClass()

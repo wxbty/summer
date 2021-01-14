@@ -14,10 +14,16 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
+
 import ink.zfei.summer.core.annotation.MergedAnnotations.SearchStrategy;
 import ink.zfei.summer.util.ObjectUtils;
 import ink.zfei.summer.util.ReflectionUtils;
 
+/**
+ * 分别处理 processClass、processMethod、processElement 三种场景。
+ * 对于  processClass、processMethod 二种场景会根据查找策略 SearchStrategy
+ * 递归查找父类或接口，代码会复杂一些
+ */
 abstract class AnnotationsScanner {
 
     private static final Annotation[] NO_ANNOTATIONS = {};
@@ -39,11 +45,12 @@ abstract class AnnotationsScanner {
     /**
      * Scan the hierarchy of the specified element for relevant annotations and
      * call the processor as required.
-     * @param context an optional context object that will be passed back to the
-     * processor
-     * @param source the source element to scan
+     *
+     * @param context        an optional context object that will be passed back to the
+     *                       processor
+     * @param source         the source element to scan
      * @param searchStrategy the search strategy to use
-     * @param processor the processor that receives the annotations
+     * @param processor      the processor that receives the annotations
      * @return the result of {@link AnnotationsProcessor#finish(Object)}
      */
     @Nullable
@@ -56,13 +63,14 @@ abstract class AnnotationsScanner {
     /**
      * Scan the hierarchy of the specified element for relevant annotations and
      * call the processor as required.
-     * @param context an optional context object that will be passed back to the
-     * processor
-     * @param source the source element to scan
+     *
+     * @param context        an optional context object that will be passed back to the
+     *                       processor
+     * @param source         the source element to scan
      * @param searchStrategy the search strategy to use
-     * @param processor the processor that receives the annotations
-     * @param classFilter an optional filter that can be used to entirely filter
-     * out a specific class from the hierarchy
+     * @param processor      the processor that receives the annotations
+     * @param classFilter    an optional filter that can be used to entirely filter
+     *                       out a specific class from the hierarchy
      * @return the result of {@link AnnotationsProcessor#finish(Object)}
      */
     @Nullable
@@ -158,8 +166,7 @@ abstract class AnnotationsScanner {
                 source = source.getSuperclass();
                 aggregateIndex++;
             }
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
 //            AnnotationUtils.handleIntrospectionFailure(source, ex);
         }
         return null;
@@ -170,7 +177,7 @@ abstract class AnnotationsScanner {
                                                   AnnotationsProcessor<C, R> processor, @Nullable BiPredicate<C, Class<?>> classFilter,
                                                   boolean includeInterfaces, boolean includeEnclosing) {
 
-        return processClassHierarchy(context, new int[] {0}, source, processor,
+        return processClassHierarchy(context, new int[]{0}, source, processor,
                 classFilter, includeInterfaces, includeEnclosing);
     }
 
@@ -225,13 +232,11 @@ abstract class AnnotationsScanner {
                             return enclosingResult;
                         }
                     }
-                }
-                catch (Throwable ex) {
+                } catch (Throwable ex) {
 //                    AnnotationUtils.handleIntrospectionFailure(source, ex);
                 }
             }
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
 //            AnnotationUtils.handleIntrospectionFailure(source, ex);
         }
         return null;
@@ -247,11 +252,11 @@ abstract class AnnotationsScanner {
             case INHERITED_ANNOTATIONS:
                 return processMethodInheritedAnnotations(context, source, processor, classFilter);
             case SUPERCLASS:
-                return processMethodHierarchy(context, new int[] {0}, source.getDeclaringClass(),
+                return processMethodHierarchy(context, new int[]{0}, source.getDeclaringClass(),
                         processor, classFilter, source, false);
             case TYPE_HIERARCHY:
             case TYPE_HIERARCHY_AND_ENCLOSING_CLASSES:
-                return processMethodHierarchy(context, new int[] {0}, source.getDeclaringClass(),
+                return processMethodHierarchy(context, new int[]{0}, source.getDeclaringClass(),
                         processor, classFilter, source, true);
         }
         throw new IllegalStateException("Unsupported search strategy " + searchStrategy);
@@ -265,8 +270,7 @@ abstract class AnnotationsScanner {
             R result = processor.doWithAggregate(context, 0);
             return (result != null ? result :
                     processMethodAnnotations(context, 0, source, processor, classFilter));
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
 //            AnnotationUtils.handleIntrospectionFailure(source, ex);
         }
         return null;
@@ -294,8 +298,7 @@ abstract class AnnotationsScanner {
                 if (result != null) {
                     return result;
                 }
-            }
-            else {
+            } else {
                 for (Method candidateMethod : getBaseTypeMethods(context, sourceClass, classFilter)) {
                     if (candidateMethod != null && isOverride(rootMethod, candidateMethod)) {
                         result = processMethodAnnotations(context, aggregateIndex[0],
@@ -330,8 +333,7 @@ abstract class AnnotationsScanner {
                     return superclassResult;
                 }
             }
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
 //            AnnotationUtils.handleIntrospectionFailure(rootMethod, ex);
         }
         return null;
@@ -425,6 +427,10 @@ abstract class AnnotationsScanner {
         return null;
     }
 
+    /**
+     * 调用 getDeclaredAnnotations 获取注解 annotations。
+     * MergedAnnotationFinder 处理查找到的 annotations 注解，返回一个最佳的结果
+     */
     @Nullable
     private static <C, R> R processElement(C context, AnnotatedElement source,
                                            AnnotationsProcessor<C, R> processor, @Nullable BiPredicate<C, Class<?>> classFilter) {
@@ -433,8 +439,7 @@ abstract class AnnotationsScanner {
             R result = processor.doWithAggregate(context, 0);
             return (result != null ? result : processor.doWithAnnotations(
                     context, 0, source, getDeclaredAnnotations(context, source, classFilter, false)));
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
 //            AnnotationUtils.handleIntrospectionFailure(source, ex);
         }
         return null;
@@ -464,14 +469,17 @@ abstract class AnnotationsScanner {
         return null;
     }
 
+    /**
+     * 获取注解元素（类、方法、属性）所有声明注解，忽略jdk自带注解即spring特殊注解@Nullable
+     * 缓存
+     */
     static Annotation[] getDeclaredAnnotations(AnnotatedElement source, boolean defensive) {
         boolean cached = false;
         Annotation[] annotations = declaredAnnotationCache.get(source);
-         if (annotations != null) {
+        if (annotations != null) {
             cached = true;
-        }
-        else {
-            //返回该元素上直接存在的所有注释
+        } else {
+            //返回该元素上直接存在的所有注解
             annotations = source.getDeclaredAnnotations();
             if (annotations.length != 0) {
                 //是否所有注解都不是用户注解
@@ -482,8 +490,7 @@ abstract class AnnotationsScanner {
                     if (isIgnorable(annotation.annotationType()) ||
                             !AttributeMethods.forAnnotationType(annotation.annotationType()).isValid(annotation)) {
                         annotations[i] = null;
-                    }
-                    else {
+                    } else {
                         allIgnored = false;
                     }
                 }
@@ -511,11 +518,18 @@ abstract class AnnotationsScanner {
         return AnnotationFilter.PLAIN.matches(annotationType);
     }
 
+    /**
+     * 初步判断是否没有需要处理的spring注解，返回true没有注解，false需要进一步判断
+     * 1、java.包下的类
+     * 2、如果只搜索当前层，看当前层声明注解是否存在
+     */
     static boolean isKnownEmpty(AnnotatedElement source, SearchStrategy searchStrategy) {
+        //只有jdk自带注解，不用继续了，当空处理
         if (hasPlainJavaAnnotationsOnly(source)) {
             return true;
         }
         if (searchStrategy == SearchStrategy.DIRECT || isWithoutHierarchy(source, searchStrategy)) {
+            //桥接方法，jdk泛型为了兼容之前的字节码
             if (source instanceof Method && ((Method) source).isBridge()) {
                 return false;
             }
@@ -527,11 +541,9 @@ abstract class AnnotationsScanner {
     static boolean hasPlainJavaAnnotationsOnly(@Nullable Object annotatedElement) {
         if (annotatedElement instanceof Class) {
             return hasPlainJavaAnnotationsOnly((Class<?>) annotatedElement);
-        }
-        else if (annotatedElement instanceof Member) {
+        } else if (annotatedElement instanceof Member) {
             return hasPlainJavaAnnotationsOnly(((Member) annotatedElement).getDeclaringClass());
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -540,12 +552,16 @@ abstract class AnnotationsScanner {
         return (type.getName().startsWith("java.") || type == Ordered.class);
     }
 
+    /**
+     * 如果没有层级，则返回查找直接注解结果
+     */
     private static boolean isWithoutHierarchy(AnnotatedElement source, SearchStrategy searchStrategy) {
         if (source == Object.class) {
             return true;
         }
         if (source instanceof Class) {
             Class<?> sourceClass = (Class<?>) source;
+            //判断是否没有父类（接口）
             boolean noSuperTypes = (sourceClass.getSuperclass() == Object.class &&
                     sourceClass.getInterfaces().length == 0);
             return (searchStrategy == SearchStrategy.TYPE_HIERARCHY_AND_ENCLOSING_CLASSES ? noSuperTypes &&
@@ -553,6 +569,7 @@ abstract class AnnotationsScanner {
         }
         if (source instanceof Method) {
             Method sourceMethod = (Method) source;
+            //私有不再继续，否则递归判断
             return (Modifier.isPrivate(sourceMethod.getModifiers()) ||
                     isWithoutHierarchy(sourceMethod.getDeclaringClass(), searchStrategy));
         }

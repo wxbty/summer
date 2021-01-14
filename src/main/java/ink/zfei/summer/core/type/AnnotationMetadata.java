@@ -6,6 +6,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ *  对某个类上的注解提供了抽象的访问
+ *  不需要提前类加载
+ */
 public interface AnnotationMetadata extends ClassMetadata, AnnotatedTypeMetadata {
 
 

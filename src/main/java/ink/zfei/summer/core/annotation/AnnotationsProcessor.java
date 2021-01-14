@@ -4,6 +4,10 @@ import ink.zfei.summer.lang.Nullable;
 
 import java.lang.annotation.Annotation;
 
+/**
+ * 用于处理 annotations的 回调 函数式接口
+ * 判断注解是否直接或间接存在于源上时使用
+ */
 @FunctionalInterface
 interface AnnotationsProcessor<C, R> {
 

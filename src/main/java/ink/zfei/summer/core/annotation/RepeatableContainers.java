@@ -11,6 +11,9 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 用于处理可重复注解
+ */
 public abstract class RepeatableContainers {
 
     @Nullable
@@ -23,9 +26,11 @@ public abstract class RepeatableContainers {
 
 
     /**
+     * 在一个可重复注解和包含注解之间建立关系。
      * Add an additional explicit relationship between a contained and
      * repeatable annotation.
-     * @param container the container type
+     *
+     * @param container  the container type
      * @param repeatable the contained repeatable type
      * @return a new {@link RepeatableContainers} instance
      */
@@ -35,6 +40,9 @@ public abstract class RepeatableContainers {
         return new ExplicitRepeatableContainer(this, repeatable, container);
     }
 
+    /**
+     * 查找 container 注解中的可重复注解@Repeatable
+     */
     @Nullable
     Annotation[] findRepeatedAnnotations(Annotation annotation) {
         if (this.parent == null) {
@@ -64,6 +72,7 @@ public abstract class RepeatableContainers {
     /**
      * Create a {@link RepeatableContainers} instance that searches using Java's
      * {@link Repeatable @Repeatable} annotation.
+     *
      * @return a {@link RepeatableContainers} instance
      */
     public static RepeatableContainers standardRepeatables() {
@@ -73,12 +82,13 @@ public abstract class RepeatableContainers {
     /**
      * Create a {@link RepeatableContainers} instance that uses a defined
      * container and repeatable type.
+     *
      * @param repeatable the contained repeatable annotation
-     * @param container the container annotation or {@code null}. If specified,
-     * this annotation must declare a {@code value} attribute returning an array
-     * of repeatable annotations. If not specified, the container will be
-     * deduced by inspecting the {@code @Repeatable} annotation on
-     * {@code repeatable}.
+     * @param container  the container annotation or {@code null}. If specified,
+     *                   this annotation must declare a {@code value} attribute returning an array
+     *                   of repeatable annotations. If not specified, the container will be
+     *                   deduced by inspecting the {@code @Repeatable} annotation on
+     *                   {@code repeatable}.
      * @return a {@link RepeatableContainers} instance
      */
     public static RepeatableContainers of(
@@ -90,6 +100,7 @@ public abstract class RepeatableContainers {
     /**
      * Create a {@link RepeatableContainers} instance that does not expand any
      * repeatable annotations.
+     *
      * @return a {@link RepeatableContainers} instance
      */
     public static RepeatableContainers none() {
@@ -98,6 +109,7 @@ public abstract class RepeatableContainers {
 
 
     /**
+     * 这是 JDK 中标准的 @Repeatable  可重复注解，findRepeatedAnnotations 方法返回 container.value()。
      * Standard {@link RepeatableContainers} implementation that searches using
      * Java's {@link Repeatable @Repeatable} annotation.
      */
@@ -149,14 +161,20 @@ public abstract class RepeatableContainers {
 
 
     /**
+     * 这是非标准的可重复注解，需要传递 container 和 repeatable 两个注解类型参数。
+     * 参数需要满足以下三个条件：一是 container 注解中有 vlaue 属性，
+     * 二是 value 方法的返回值类型为数组，三是数组的类型为 repeatable 注解类型。
+     * 也就是说 container 注解中除了 value 属性外还可以有其它属性，
+     * findRepeatedAnnotations 方法返回 container.value()。
      * A single explicit mapping.
      */
     private static class ExplicitRepeatableContainer extends RepeatableContainers {
 
+        //可重复的注解
         private final Class<? extends Annotation> repeatable;
-
+        //容器注解。
         private final Class<? extends Annotation> container;
-
+        //value值方法
         private final Method valueMethod;
 
         ExplicitRepeatableContainer(@Nullable RepeatableContainers parent,
@@ -164,10 +182,13 @@ public abstract class RepeatableContainers {
 
             super(parent);
             Assert.notNull(repeatable, "Repeatable must not be null");
+            //如果容器为null，则通过 repeatable 注解 获取
             if (container == null) {
                 container = deduceContainer(repeatable);
             }
+            //获取container的value属性
             Method valueMethod = AttributeMethods.forAnnotationType(container).get(MergedAnnotation.VALUE);
+            //验证
             try {
                 if (valueMethod == null) {
                     throw new NoSuchMethodException("No value method found");
@@ -188,10 +209,13 @@ public abstract class RepeatableContainers {
             this.valueMethod = valueMethod;
         }
 
+        //推算containe
         private Class<? extends Annotation> deduceContainer(Class<? extends Annotation> repeatable) {
+            //获取注解的 @Repeatable 实例
             Repeatable annotation = repeatable.getAnnotation(Repeatable.class);
             Assert.notNull(annotation, () -> "Annotation type must be a repeatable annotation: " +
                     "failed to resolve container type for " + repeatable.getName());
+            //获取实例的value属性，获取到container注解类型
             return annotation.value();
         }
 
@@ -224,6 +248,7 @@ public abstract class RepeatableContainers {
 
 
     /**
+     * 没有可重复注解，findRepeatedAnnotations 方法始终返回 null。
      * No repeatable containers.
      */
     private static class NoRepeatableContainers extends RepeatableContainers {

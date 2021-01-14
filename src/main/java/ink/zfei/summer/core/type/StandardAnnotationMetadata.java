@@ -14,6 +14,7 @@ public class StandardAnnotationMetadata extends StandardClassMetadata implements
 
     public StandardAnnotationMetadata(Class<?> introspectedClass, boolean nestedAnnotationsAsMap) {
         super(introspectedClass);
+        //缓存类上的注解，方便访问
         this.mergedAnnotations = MergedAnnotations.from(introspectedClass,
                 SearchStrategy.INHERITED_ANNOTATIONS, RepeatableContainers.none(),
                 AnnotationFilter.NONE);

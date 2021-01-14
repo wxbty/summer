@@ -2,6 +2,11 @@ package ink.zfei.summer.core.annotation;
 
 import java.lang.annotation.Annotation;
 
+/**
+ * 从多个结果中 pk 出一个最佳的结果返回，有 Nearest 和 FirstDirectlyDeclared 二种实现。
+ * isBestCandidate 方法返回 true 则说明是最佳结果，直接返回即可；
+ * select 方法则将两个结果进行 pk
+ */
 @FunctionalInterface
 public interface MergedAnnotationSelector<A extends Annotation> {
 

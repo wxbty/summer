@@ -10,6 +10,16 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * 注解存在于类或方法上，所以在每个类或方法的元数据对象中都会有一个存放注解的属性，
+ * 这个属性存储的是所有注解实例及由对每个注解类型的注解层级机构构建的映射父子关系，
+ * 类型是【TypeMappedAnnotations】。这里面牵涉到元数据，注解实例，
+ * 注解类型，注解类型的注解，及由注解的层级关系形成的注解类型映射。形成的映射集合中，
+ * 每个元素都有源即父节点【source】，根【root】，与根节点之间的距离【distance】，
+ * 与根节点之间所有注解节点的类型集合【metaTypes】，从而形成了每一颗映射树【AnnotationTypeMappings】
+ * 中的节点【AnnotationTypeMapping】，并且第一个节点即根节点一定是在类或方法上直接声明的注解，
+ * 并且是无源有根距离为0
+ */
 final class TypeMappedAnnotations implements MergedAnnotations {
 
     /**
@@ -35,6 +45,11 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 
     private final AnnotationFilter annotationFilter;
 
+    /**
+     * 元数据的注解集合【TypeMappedAnnotations】中有一个属性【aggregates】，
+     * 这个属性是个集合，看着好像是针对注解的，有几个注解就应该有几个元素，
+     * 但其实不是这样，它是针对元数据的，在这里只有一个元数据，所以只会有一个元素。
+     */
     @Nullable
     private volatile List<Aggregate> aggregates;
 
@@ -331,6 +346,7 @@ final class TypeMappedAnnotations implements MergedAnnotations {
 
 
     /**
+     * 处理查找到的 annotations 注解
      * {@link AnnotationsProcessor} that finds a single {@link MergedAnnotation}.
      */
     private class MergedAnnotationFinder<A extends Annotation>
@@ -354,12 +370,21 @@ final class TypeMappedAnnotations implements MergedAnnotations {
             this.selector = (selector != null ? selector : MergedAnnotationSelectors.nearest());
         }
 
+        /**
+         * 相当于快速查找，直接返回上次缓存的结果
+         */
         @Override
         @Nullable
         public MergedAnnotation<A> doWithAggregate(Object context, int aggregateIndex) {
             return this.result;
         }
 
+        /**
+         * 用于处理 annotations 注解，如果 MergedAnnotationSelector 有最佳的结果，
+         * 比如，查找到的是根注解（distance=0），则无需递归查找元注解，直接返回，
+         * 否则更新上一次的查找结果
+         * @return
+         */
         @Override
         @Nullable
         public MergedAnnotation<A> doWithAnnotations(Object type, int aggregateIndex,
