@@ -5,6 +5,8 @@ import ink.zfei.summer.beans.factory.*;
 import ink.zfei.summer.beans.factory.config.*;
 import ink.zfei.summer.beans.factory.support.*;
 import ink.zfei.summer.context.ConfigurableApplicationContext;
+import ink.zfei.summer.context.LifecycleProcessor;
+import ink.zfei.summer.context.support.DefaultLifecycleProcessor;
 import ink.zfei.summer.context.support.PostProcessorRegistrationDelegate;
 import ink.zfei.summer.core.convert.ConversionService;
 import ink.zfei.summer.core.env.ConfigurableEnvironment;
@@ -40,6 +42,9 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 
     @Nullable
     private ApplicationContext parent;
+
+    @Nullable
+    private LifecycleProcessor lifecycleProcessor;
     /*
      *  容器对外显示名称，默认类似Object的toString
      */
@@ -100,11 +105,35 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 
         finishBeanFactoryInitialization();
 
+        finishRefresh();
 
-        //4、发布refresh事件，遍历listener,分别执行
-        RefreshApplicationEvent event = new RefreshApplicationEvent();
-        publishEvent(event);
+    }
 
+    private void finishRefresh() {
+
+        initLifecycleProcessor();
+
+        // SmartLifeCycle接口可以获取整个生命周期的能力，包括启动和关闭等各个方法的回调
+        getLifecycleProcessor().onRefresh();
+
+        // 事件监听一样可以获取容器的各个阶段的事件，但是需要判断事件的类型处理不同的事件逻辑。
+//        publishEvent(new ContextRefreshedEvent(this));
+    }
+
+    LifecycleProcessor getLifecycleProcessor() throws IllegalStateException {
+        if (this.lifecycleProcessor == null) {
+            throw new IllegalStateException("LifecycleProcessor not initialized - " +
+                    "call 'refresh' before invoking lifecycle methods via the context: " + this);
+        }
+        return this.lifecycleProcessor;
+    }
+
+    private void initLifecycleProcessor() {
+
+        DefaultLifecycleProcessor defaultProcessor = new DefaultLifecycleProcessor();
+//        defaultProcessor.setBeanFactory(beanFactory);
+        this.lifecycleProcessor = defaultProcessor;
+//        beanFactory.registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, this.lifecycleProcessor);
     }
 
     protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
