@@ -5,6 +5,8 @@ import ink.zfei.summer.beans.MutablePropertyValues;
 import ink.zfei.summer.beans.factory.config.AutowireCapableBeanFactory;
 import ink.zfei.summer.beans.factory.config.BeanDefinition;
 import ink.zfei.summer.beans.factory.config.ConstructorArgumentValues;
+import ink.zfei.summer.core.io.Resource;
+import ink.zfei.summer.lang.Nullable;
 import ink.zfei.summer.util.ClassUtils;
 
 import java.lang.reflect.Constructor;
@@ -111,6 +113,13 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
     private boolean abstractFlag = false;
     private Boolean lazyInit;
     private int autowireMode = AUTOWIRE_NO;
+
+    //人看的懂的，对bean的描述
+    @Nullable
+    private String description;
+
+    @Nullable
+    private Resource resource;
 //
 //    private int dependencyCheck = DEPENDENCY_CHECK_NONE;
 //
@@ -1188,4 +1197,17 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 //        }
 //        return sb.toString();
 //    }
+
+    public void setResource(@Nullable Resource resource) {
+        this.resource = resource;
+    }
+
+    public void setAutowireMode(int autowireMode) {
+        this.autowireMode = autowireMode;
+    }
+
+    @Override
+    public void setDescription(@Nullable String description) {
+        this.description = description;
+    }
 }

@@ -5,6 +5,8 @@ import ink.zfei.summer.beans.factory.config.BeanDefinition;
 import ink.zfei.summer.beans.factory.config.BeanDefinitionHolder;
 import ink.zfei.summer.beans.factory.support.AbstractBeanDefinition;
 import ink.zfei.summer.core.ResolvableType;
+import ink.zfei.summer.lang.Nullable;
+import ink.zfei.summer.util.Assert;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
@@ -135,4 +137,15 @@ public class GenericBeanDefinition extends AbstractBeanDefinition {
     public GenericBeanDefinition cloneBeanDefinition() {
         return new GenericBeanDefinition(this);
     }
+
+    public void setUniqueFactoryMethodName(String name) {
+        Assert.hasText(name, "Factory method name must not be empty");
+        setFactoryMethodName(name);
+        this.isFactoryMethodUnique = true;
+    }
+
+    public void setResolvedFactoryMethod(@Nullable Method method) {
+        this.factoryMethodToIntrospect = method;
+    }
+
 }

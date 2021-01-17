@@ -13,6 +13,7 @@ public @interface Bean {
 
     String initMethod() default "";
 
-
+//    @AliasFor("name") name是别名
+    String[] value() default {};
 
 }

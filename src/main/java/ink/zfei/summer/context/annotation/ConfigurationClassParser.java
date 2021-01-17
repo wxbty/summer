@@ -9,8 +9,10 @@ import ink.zfei.summer.beans.factory.support.AbstractBeanDefinition;
 import ink.zfei.summer.core.ImportBeanDefinitionRegistrar;
 import ink.zfei.summer.core.ImportSelector;
 import ink.zfei.summer.core.Ordered;
+import ink.zfei.summer.core.annotation.Bean;
 import ink.zfei.summer.core.io.ResourceLoader;
 import ink.zfei.summer.core.type.AnnotationMetadata;
+import ink.zfei.summer.core.type.MethodMetadata;
 import ink.zfei.summer.core.type.StandardAnnotationMetadata;
 import ink.zfei.summer.core.type.classreading.MetadataReader;
 import ink.zfei.summer.core.type.classreading.MetadataReaderFactory;
@@ -58,8 +60,7 @@ public class ConfigurationClassParser {
                 }
                 // Otherwise ignore new imported config class; existing non-imported class overrides it.
                 return;
-            }
-            else {
+            } else {
                 // Explicit bean definition found, probably replacing an import.
                 // Let's remove the old one and go with the new one.
                 this.configurationClasses.remove(configClass);
@@ -75,6 +76,7 @@ public class ConfigurationClassParser {
         }
         while (sourceClass != null);
 
+        this.configurationClasses.put(configClass, configClass);
     }
 
     protected final void parse(Class<?> clazz, String beanName) {
@@ -244,12 +246,44 @@ public class ConfigurationClassParser {
         // Process any @ImportResource annotations
 
         // Process individual @Bean methods
-
+        Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
+        for (MethodMetadata methodMetadata : beanMethods) {
+            configClass.addBeanMethod(new BeanMethod(methodMetadata, configClass));
+        }
         // Process default methods on interfaces
 
         // Process superclass, if any
 
         return null;
+    }
+
+    private Set<MethodMetadata> retrieveBeanMethodMetadata(SourceClass sourceClass) {
+        AnnotationMetadata original = sourceClass.getMetadata();
+        Set<MethodMetadata> beanMethods = original.getAnnotatedMethods(Bean.class.getName());
+        if (beanMethods.size() > 1 && original instanceof StandardAnnotationMetadata) {
+            // Try reading the class file via ASM for deterministic declaration order...
+            // Unfortunately, the JVM's standard reflection returns methods in arbitrary
+            // order, even between different runs of the same application on the same JVM.
+            AnnotationMetadata asm =
+                    this.metadataReaderFactory.getMetadataReader(original.getClassName()).getAnnotationMetadata();
+            Set<MethodMetadata> asmMethods = asm.getAnnotatedMethods(Bean.class.getName());
+            if (asmMethods.size() >= beanMethods.size()) {
+                Set<MethodMetadata> selectedMethods = new LinkedHashSet<>(asmMethods.size());
+                for (MethodMetadata asmMethod : asmMethods) {
+                    for (MethodMetadata beanMethod : beanMethods) {
+                        if (beanMethod.getMethodName().equals(asmMethod.getMethodName())) {
+                            selectedMethods.add(beanMethod);
+                            break;
+                        }
+                    }
+                }
+                if (selectedMethods.size() == beanMethods.size()) {
+                    // All reflection-detected methods found in ASM method set -> proceed
+                    beanMethods = selectedMethods;
+                }
+            }
+        }
+        return beanMethods;
     }
 
 

@@ -3,6 +3,7 @@ package ink.zfei.summer.beans.factory.config;
 import ink.zfei.summer.beans.BeanMetadataElement;
 import ink.zfei.summer.beans.MutablePropertyValues;
 import ink.zfei.summer.core.AttributeAccessor;
+import ink.zfei.summer.lang.Nullable;
 
 /**
  * AttributeAccessor：额外属性访问能力
@@ -92,4 +93,6 @@ public interface BeanDefinition extends AttributeAccessor, BeanMetadataElement {
     void setScope(String scope);
 
     String getScope();
+
+    void setDescription(@Nullable String description);
 }
