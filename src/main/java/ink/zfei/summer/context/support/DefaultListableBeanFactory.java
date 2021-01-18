@@ -497,6 +497,25 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         return this.configurationFrozen;
     }
 
+    @Override
+    public void preInstantiateSingletons() {
+        List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);
+        //2、遍历bean定义信息，实例化bean
+
+        for (String beanName : beanNames) {
+            //todo 过滤 if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit())
+            if (isFactoryBean(beanName)) {
+                Object bean = getBean(FACTORY_BEAN_PREFIX + beanName);
+                if (bean instanceof FactoryBean) {
+                    //todo SmartFactoryBean
+                    getBean(beanName);
+                }
+            } else {
+                getBean(beanName);
+            }
+        }
+    }
+
     private boolean isSingleton(String beanName, GenericBeanDefinition mbd, @Nullable BeanDefinitionHolder dbd) {
         return (dbd != null ? mbd.isSingleton() : isSingleton(beanName));
     }

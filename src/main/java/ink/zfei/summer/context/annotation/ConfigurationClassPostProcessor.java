@@ -6,6 +6,7 @@ import ink.zfei.summer.beans.BeanDefinitionRegistryPostProcessor;
 import ink.zfei.summer.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import ink.zfei.summer.beans.factory.config.BeanDefinition;
 import ink.zfei.summer.beans.factory.config.BeanDefinitionHolder;
+import ink.zfei.summer.beans.factory.support.BeanNameGenerator;
 import ink.zfei.summer.context.AnnotationConfigApplicationContext;
 import ink.zfei.summer.context.annotation.ConfigurationClassUtils;
 import ink.zfei.summer.core.*;
@@ -28,6 +29,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
     public static ThreadLocal<Map<String, RootBeanDefination>> configBeanInfos = ThreadLocal.withInitial(() -> new HashMap<>());
     private ConfigurationClassBeanDefinitionReader reader;
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
+    public static final AnnotationBeanNameGenerator IMPORT_BEAN_NAME_GENERATOR =
+            new FullyQualifiedAnnotationBeanNameGenerator();
+    private BeanNameGenerator importBeanNameGenerator = IMPORT_BEAN_NAME_GENERATOR;
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
@@ -67,7 +71,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 // Read the model and create bean definitions based on its content
             if (this.reader == null) {
                 this.reader = new ConfigurationClassBeanDefinitionReader(
-                        registry);
+                        registry,this.importBeanNameGenerator);
             }
 
             this.reader.loadBeanDefinitions(configClasses);

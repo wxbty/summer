@@ -1,5 +1,6 @@
 package ink.zfei.summer.beans.factory.config;
 
+import ink.zfei.summer.context.LifecycleProcessor;
 import ink.zfei.summer.lang.Nullable;
 
 /**
@@ -59,6 +60,8 @@ public interface SingletonBeanRegistry {
      * @since 4.2
      */
     Object getSingletonMutex();
+
+    void registerSingleton(String beanName, Object singletonObject);
 
 //    void registerBeanDefinition(String beanName, BeanDefinition beanDefinition);
 }

@@ -85,6 +85,8 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
     private final Set<ApplicationListener> applicationListeners = new LinkedHashSet<>();
     private ConfigurableEnvironment environment;
 
+    public static final String LIFECYCLE_PROCESSOR_BEAN_NAME = "lifecycleProcessor";
+
     public AbstractApplicationContext() {
     }
 
@@ -103,7 +105,7 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 
         onRefresh();
 
-        finishBeanFactoryInitialization();
+        finishBeanFactoryInitialization(beanFactory);
 
         finishRefresh();
 
@@ -130,10 +132,11 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 
     private void initLifecycleProcessor() {
 
+        ConfigurableListableBeanFactory beanFactory = getBeanFactory();
         DefaultLifecycleProcessor defaultProcessor = new DefaultLifecycleProcessor();
-//        defaultProcessor.setBeanFactory(beanFactory);
+        defaultProcessor.setBeanFactory(beanFactory);
         this.lifecycleProcessor = defaultProcessor;
-//        beanFactory.registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, this.lifecycleProcessor);
+        beanFactory.registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, this.lifecycleProcessor);
     }
 
     protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
@@ -175,12 +178,12 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
         return getBeanFactory();
     }
 
-    private void finishBeanFactoryInitialization() {
+    private void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 
         //todo ConversionService 类型转换
         //todo 内置属性解析器
 
-        preInstantiateSingletons();
+        beanFactory.preInstantiateSingletons();
 
     }
 
@@ -205,29 +208,6 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
                 getBean(beanName);
             }
 
-//            GenericBeanDefinition mbd = beanDefinitionMap.get(beanName);
-//            GenericBeanDefinition mbdToUse = mbd;
-//            Class<?> resolvedClass = resolveBeanClass(mbd, beanName);
-//            if (resolvedClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
-//                mbdToUse = new GenericBeanDefinition(mbd);
-//                mbd.setBeanClass(resolvedClass);
-//            }
-//
-//
-//            //postProcessBeforeInstantiation
-//            Object bean = applyPostProcessBeforeInstantiation(resolvedClass, beanName);
-//            if (bean != null) {
-//                singletonObjects.put(beanName, bean);
-//            } else {
-//                Object wrappedBean = getBean(beanName, resolvedClass, mbd);
-//                //postProcessafterInstantiation
-//                applyPostProcessAfaterInstantiation(resolvedClass, beanName);
-//
-//
-//                populateBean(beanName, mbd, wrappedBean);
-//                initializeBean(beanName, mbd, resolvedClass, wrappedBean);
-//
-//            }
         }
 
     }

@@ -2,9 +2,12 @@ package ink.zfei.summer.context.annotation;
 
 import ink.zfei.summer.beans.BeanDefinitionRegistry;
 import ink.zfei.summer.beans.factory.annotation.AnnotatedBeanDefinition;
+import ink.zfei.summer.beans.factory.annotation.AnnotatedGenericBeanDefinition;
 import ink.zfei.summer.beans.factory.annotation.Autowire;
 import ink.zfei.summer.beans.factory.config.BeanDefinition;
+import ink.zfei.summer.beans.factory.config.BeanDefinitionHolder;
 import ink.zfei.summer.beans.factory.support.AbstractBeanDefinition;
+import ink.zfei.summer.beans.factory.support.BeanNameGenerator;
 import ink.zfei.summer.beans.factory.support.GenericBeanDefinition;
 import ink.zfei.summer.core.annotation.AnnotationAttributes;
 import ink.zfei.summer.core.annotation.AnnotationConfigUtils;
@@ -23,9 +26,12 @@ import java.util.Set;
 
 public class ConfigurationClassBeanDefinitionReader {
     private final BeanDefinitionRegistry registry;
+    private final BeanNameGenerator importBeanNameGenerator;
 
-    public ConfigurationClassBeanDefinitionReader(BeanDefinitionRegistry registry) {
+    public ConfigurationClassBeanDefinitionReader(BeanDefinitionRegistry registry, BeanNameGenerator importBeanNameGenerator) {
         this.registry = registry;
+        this.importBeanNameGenerator = importBeanNameGenerator;
+
     }
 
 
@@ -38,12 +44,28 @@ public class ConfigurationClassBeanDefinitionReader {
     private void loadBeanDefinitionsForConfigurationClass(
             ConfigurationClass configClass) {
 
+        if (configClass.isImported()) {
+            registerBeanDefinitionForImportedConfigurationClass(configClass);
+        }
+
         for (BeanMethod beanMethod : configClass.getBeanMethods()) {
             loadBeanDefinitionsForBeanMethod(beanMethod);
         }
 
 //        loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
 //        loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
+    }
+
+    private void registerBeanDefinitionForImportedConfigurationClass(ConfigurationClass configClass) {
+        AnnotationMetadata metadata = configClass.getMetadata();
+        AnnotatedGenericBeanDefinition configBeanDef = new AnnotatedGenericBeanDefinition(metadata);
+
+        String configBeanName = this.importBeanNameGenerator.generateBeanName(configBeanDef, this.registry);
+        AnnotationConfigUtils.processCommonDefinitionAnnotations(configBeanDef, metadata);
+
+        BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(configBeanDef, configBeanName);
+        this.registry.registerBeanDefinition(definitionHolder.getBeanName(), definitionHolder.getBeanDefinition());
+        configClass.setBeanName(configBeanName);
     }
 
     /**
@@ -59,7 +81,7 @@ public class ConfigurationClassBeanDefinitionReader {
         Assert.state(bean != null, "No @Bean annotation attributes");
 
         // Consider name and any aliases
-        List<String> names = new ArrayList<>(Arrays.asList(bean.getStringArray("name")));
+        List<String> names = new ArrayList<>(Arrays.asList(bean.getStringArray("value")));
         String beanName = (!names.isEmpty() ? names.remove(0) : methodName);
 
         //忽略alis
@@ -94,11 +116,6 @@ public class ConfigurationClassBeanDefinitionReader {
         Autowire autowire = bean.getEnum("autowire");
         if (autowire.isAutowire()) {
             beanDef.setAutowireMode(autowire.value());
-        }
-
-        boolean autowireCandidate = bean.getBoolean("autowireCandidate");
-        if (!autowireCandidate) {
-            beanDef.setAutowireCandidate(false);
         }
 
         String initMethodName = bean.getString("initMethod");

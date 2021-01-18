@@ -18,4 +18,6 @@ public interface ConfigurableListableBeanFactory extends ListableBeanFactory, Au
     int getBeanPostProcessorCount();
 
     boolean isConfigurationFrozen();
+
+    void preInstantiateSingletons();
 }
