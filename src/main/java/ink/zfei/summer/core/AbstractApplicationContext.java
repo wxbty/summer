@@ -111,7 +111,7 @@ public abstract class AbstractApplicationContext implements ConfigurableApplicat
 
     }
 
-    private void finishRefresh() {
+    protected void finishRefresh() {
 
         initLifecycleProcessor();
 
