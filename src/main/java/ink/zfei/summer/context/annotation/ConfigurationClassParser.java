@@ -112,7 +112,7 @@ public class ConfigurationClassParser {
      */
     private class SourceClass implements Ordered {
 
-        //注解类来自哪里
+        //注解类,class或者MetadataReader
         private final Object source;
         //注解元信息
         private final AnnotationMetadata metadata;
@@ -124,6 +124,17 @@ public class ConfigurationClassParser {
             } else {
                 this.metadata = ((MetadataReader) source).getAnnotationMetadata();
             }
+        }
+
+        @Override
+        public boolean equals(@Nullable Object other) {
+            return (this == other || (other instanceof SourceClass &&
+                    this.metadata.getClassName().equals(((SourceClass) other).metadata.getClassName())));
+        }
+
+        @Override
+        public int hashCode() {
+            return this.metadata.getClassName().hashCode();
         }
 
         @Override
@@ -288,6 +299,7 @@ public class ConfigurationClassParser {
 
 
     /**
+     * 从配置类（遍历所有层级并去重）获取@Import的value，把value封装成class的包装对象SourceClass
      * Returns {@code @Import} class, considering all meta-annotations.
      */
     private Set<SourceClass> getImports(SourceClass sourceClass) {
@@ -299,6 +311,7 @@ public class ConfigurationClassParser {
 
     private void collectImports(SourceClass sourceClass, Set<SourceClass> imports, Set<SourceClass> visited) {
 
+//        利用Set.add返回结果可以去重
         if (visited.add(sourceClass)) {
             for (SourceClass annotation : sourceClass.getAnnotations()) {
                 String annName = annotation.getMetadata().getClassName();
@@ -306,6 +319,7 @@ public class ConfigurationClassParser {
                     collectImports(annotation, imports, visited);
                 }
             }
+            //这里子注解也能获取到父注解的value，存在重复，需要重写SourceClass的hashcode和equals，addAll可以去重
             imports.addAll(sourceClass.getAnnotationAttributes(Import.class.getName(), "value"));
         }
     }
@@ -325,10 +339,12 @@ public class ConfigurationClassParser {
                 if (candidate.isAssignable(ImportSelector.class)) {
                     // Candidate class is an ImportSelector -> delegate to it to determine imports
                     Class<?> candidateClass = candidate.loadClass();
+                    //实例化ImportSelector，如有需要的化，注入resourceLoader、beanFactory（构造函数或者aware接口）
                     ImportSelector selector = ParserStrategyUtils.instantiateClass(candidateClass, ImportSelector.class,
                             this.resourceLoader, this.registry);
                     Predicate<String> selectorFilter = selector.getExclusionFilter();
                     if (selectorFilter != null) {
+                        //忽略基础注解+ImportSelector显式指定忽略的配置类
                         exclusionFilter = exclusionFilter.or(selectorFilter);
                     }
                     if (selector instanceof DeferredImportSelector) {
@@ -336,6 +352,7 @@ public class ConfigurationClassParser {
                     } else {
                         String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
                         Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames, exclusionFilter);
+                        //递归解析，当configClass不是import时，下次循环走最下面else，重新解析配置类所有bean信息
                         processImports(configClass, currentSourceClass, importSourceClasses, exclusionFilter, false);
                     }
                 } else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {

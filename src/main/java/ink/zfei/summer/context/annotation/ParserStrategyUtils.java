@@ -4,6 +4,7 @@ import ink.zfei.summer.beans.BeanDefinitionRegistry;
 import ink.zfei.summer.beans.BeanInstantiationException;
 import ink.zfei.summer.beans.factory.Aware;
 import ink.zfei.summer.beans.factory.BeanFactory;
+import ink.zfei.summer.beans.factory.BeanFactoryAware;
 import ink.zfei.summer.beans.factory.config.ConfigurableBeanFactory;
 import ink.zfei.summer.core.env.Environment;
 import ink.zfei.summer.core.io.ResourceLoader;
@@ -15,6 +16,7 @@ import java.lang.reflect.Constructor;
 
 public class ParserStrategyUtils {
 
+    @SuppressWarnings("unchecked")
     static <T> T instantiateClass(Class<?> clazz, Class<T> assignableTo,
                                   ResourceLoader resourceLoader, BeanDefinitionRegistry registry) {
 
@@ -25,11 +27,14 @@ public class ParserStrategyUtils {
         }
         ClassLoader classLoader = (registry instanceof ConfigurableBeanFactory ?
                 ((ConfigurableBeanFactory) registry).getBeanClassLoader() : resourceLoader.getClassLoader());
+        //构造器注入
         T instance = (T) createInstance(clazz, resourceLoader, registry, classLoader);
+        //aware接口注入
         ParserStrategyUtils.invokeAwareMethods(instance, resourceLoader, registry, classLoader);
         return instance;
     }
 
+    //根据参数类型，自动注入beanFactory或classLader
     private static Object createInstance(Class<?> clazz,
                                          ResourceLoader resourceLoader, BeanDefinitionRegistry registry,
                                          @Nullable ClassLoader classLoader) {
@@ -81,6 +86,11 @@ public class ParserStrategyUtils {
     private static void invokeAwareMethods(Object parserStrategyBean,
                                            ResourceLoader resourceLoader, BeanDefinitionRegistry registry, @Nullable ClassLoader classLoader) {
 
+        if (parserStrategyBean instanceof Aware) {
 
+            if (parserStrategyBean instanceof BeanFactoryAware && registry instanceof BeanFactory) {
+                ((BeanFactoryAware) parserStrategyBean).setBeanFactory((BeanFactory) registry);
+            }
+        }
     }
 }

@@ -80,13 +80,6 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
         } while (!candidates.isEmpty());
 
-        //1、scan
-        //2、this.reader.loadBeanDefinitions(configClasses);
-        for (BeanDefinitionHolder bh : configCandidates) {
-            loadFromConfiguration(registry, bh.getBeanDefinition().getBeanClassName());
-        }
-
-
     }
 
     private void loadFromConfiguration(BeanDefinitionRegistry registry, String configuationName) {
