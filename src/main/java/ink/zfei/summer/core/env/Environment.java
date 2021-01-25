@@ -4,4 +4,6 @@ public interface Environment  extends PropertyResolver {
 
     String getActiveProfile();
 
+    String[] getActiveProfiles();
+
 }

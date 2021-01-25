@@ -11,4 +11,6 @@ public interface ConfigurableEnvironment extends Environment{
     Map<String, Object> getSystemProperties();
 
     MutablePropertySources getPropertySources();
+
+    void setActiveProfiles(String... profiles);
 }
